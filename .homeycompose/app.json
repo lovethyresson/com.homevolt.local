@@ -1,0 +1,31 @@
+{
+  "id": "com.homevolt.local",
+  "name": {
+    "en": "Homevolt"
+  },
+  "description": {
+    "en": "Home energy at your fingertips"
+  },
+  "version": "0.1.0",
+  "sdk": 3,
+  "compatibility": ">=12.0.0",
+  "author": {
+    "name": "Love Thyresson",
+    "email": "love@thyresson.se"
+  },
+  "brandColor": "#003CFF",
+  "images": {
+    "small": "/assets/images/homevolt-small.png",
+    "large": "/assets/images/homevolt-large.png",
+    "xlarge": "/assets/images/homevolt-xlarge.png"
+  },
+  "category": "energy",
+  "drivers": [
+    {
+      "id": "homevolt",
+      "name": {
+        "en": "Homevolt"
+      }
+    }
+  ]
+}

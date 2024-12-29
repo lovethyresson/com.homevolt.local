@@ -1,0 +1,15 @@
+{
+    "type": "number",
+    "title": {
+      "en": "Discharge Power"
+    },
+    "desc": {
+      "en": "The current discharge power of the system in watts."
+    },
+    "units": {
+      "en": "W"
+    },
+    "getable": true,
+    "setable": false
+  }
+  

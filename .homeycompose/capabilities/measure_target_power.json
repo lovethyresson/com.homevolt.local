@@ -1,0 +1,16 @@
+{
+    "type": "number",
+    "title": {
+      "en": "Target Power"
+    },
+    "desc": {
+      "en": "The target power output of the system in watts."
+    },
+    "units": {
+      "en": "W"
+    },
+    "insights": true,
+    "getable": true,
+    "setable": false
+  }
+  

@@ -1,0 +1,15 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Available Energy"
+  },
+  "desc": {
+    "en": "The available energy in the battery (kWh)."
+  },
+  "units": {
+    "en": "kWh"
+  },
+  "decimals": 2,
+  "getable": true,
+  "setable": false
+}
