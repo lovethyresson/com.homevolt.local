@@ -47,34 +47,52 @@ async fetchData() {
 
     const data = await response.json();
 
-    // Parse data into useful data points
-  
-    const batteryImporteKWh = data.ems[0]?.ems_data?.energy_consumed /1000 || null;     // Accumulated imported energy
-    const batteryExportedKWh = data.ems[0]?.ems_data?.energy_produced /1000 || null;    // Accumulated exported energy
-    const batteryChargePower = data.ems[0]?.ems_data?.power || 0;                       // Current charge power
-    const batteryTargetPower =  data.ems[0]?.ems_control?.pwr_ref || 0;                 // Target power
-    const batteryAvailableEnergykWh = 
-        (data.ems[0]?.ems_info?.rated_capacity -                                         // Available capacity in battery in kWh
-        data.ems[0]?.ems_data?.avail_cap) / 1000 
-        || null;    
-    const batteryAvailableEnergyPct = data.ems[0]?.ems_data?.soc_avg / 100 || null;     // Available capacity in battery in %
-    const batteryTemperature = data.ems[0]?.ems_data?.sys_temp / 10 || null;            // System tempereature
-    const batteryGridFrequency = data.ems[0]?.ems_data?.frequency / 1000 || null;       // Grid frequency
 
+
+
+    // Parse data into useful data points and update capabilities
+    
+    const batteryImporteKWh = data.ems[0]?.ems_data?.energy_consumed / 1000;     // Accumulated imported energy
+    const batteryExportedKWh = data.ems[0]?.ems_data?.energy_produced / 1000;    // Accumulated exported energy
+    const batteryChargePower = data.ems[0]?.ems_data?.power;                     // Current charge power
+    const batteryTargetPower = data.ems[0]?.ems_control?.pwr_ref;                // Target power
+    const batteryAvailableEnergykWh = data.ems[0]?.bms_data?.[0]?.energy_avail;  // Available capacity in battery in kWh
+    const batteryAvailableEnergyPct = data.ems[0]?.ems_data?.soc_avg / 100;      // Available capacity in battery in %
+    const batteryTemperature = data.ems[0]?.ems_data?.sys_temp / 10;             // System temperature
+    const batteryGridFrequency = data.ems[0]?.ems_data?.frequency / 1000;        // Grid frequency
+    
+    
     // Update capabilities with the fetched data
-    this.setCapabilityValue('measure_target_power', batteryTargetPower || null);
-    this.setCapabilityValue('measure_power', batteryChargePower || null);
-    this.setCapabilityValue('meter_power.imported', batteryImporteKWh);
-    this.setCapabilityValue('meter_power.exported', batteryExportedKWh);
-    this.setCapabilityValue('measure_energy_available', batteryAvailableEnergykWh || null);
-    this.setCapabilityValue('measure_battery', batteryAvailableEnergyPct || null);
-    this.setCapabilityValue('measure_temperature', batteryTemperature || null);
-    this.setCapabilityValue('measure_frequency', batteryGridFrequency || null);
+    
+    if (batteryTargetPower !== undefined && batteryTargetPower !== null) {
+        this.setCapabilityValue('measure_target_power', batteryTargetPower);
+    }
+    if (batteryChargePower !== undefined && batteryChargePower !== null) {
+        this.setCapabilityValue('measure_power', batteryChargePower);
+    }
+    if (batteryImporteKWh !== undefined && batteryImporteKWh !== null) {
+        this.setCapabilityValue('meter_power.imported', batteryImporteKWh);
+    }
+    if (batteryExportedKWh !== undefined && batteryExportedKWh !== null) {
+        this.setCapabilityValue('meter_power.exported', batteryExportedKWh);
+    }
+    if (batteryAvailableEnergykWh !== undefined && batteryAvailableEnergykWh !== null) {
+        this.setCapabilityValue('measure_energy_available', batteryAvailableEnergykWh);
+    }
+    if (batteryAvailableEnergyPct !== undefined && batteryAvailableEnergyPct !== null) {
+        this.setCapabilityValue('measure_battery', batteryAvailableEnergyPct);
+    }
+    if (batteryTemperature !== undefined && batteryTemperature !== null) {
+        this.setCapabilityValue('measure_temperature', batteryTemperature);
+    }
+    if (batteryGridFrequency !== undefined && batteryGridFrequency !== null) {
+        this.setCapabilityValue('measure_frequency', batteryGridFrequency);
+    }
 
-    this.log('Rated: ', data.ems[0]?.aggregated?.ems_info?.rated_capacity);
+    // this.log('Rated: ', data.ems[0]?.aggregated?.ems_info?.rated_capacity);
 
   
-    //this.log('Data updated:', data);
+    //this.log('Data updated:', data.ems[0]?.bms_data?.energy_avail);
   } catch (error) {
     this.log('Error fetching data:', error.message);
   }
