@@ -4,5 +4,8 @@
   },
   "0.1.1": {
     "en": "Switched to correct source for available energy capability."
+  },
+  "0.1.2": {
+    "en": "Add inisghts to available energy capability"
   }
 }
