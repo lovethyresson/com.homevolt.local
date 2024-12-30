@@ -9,6 +9,7 @@
   "units": {
     "en": "kWh"
   },
+  "insights": true,
   "decimals": 2,
   "getable": true,
   "setable": false
