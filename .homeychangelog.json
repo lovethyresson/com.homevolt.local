@@ -7,5 +7,8 @@
   },
   "0.1.2": {
     "en": "Add inisghts to available energy capability"
+  },
+  "0.2.0": {
+    "en": "Add discovery instead of manual IP input"
   }
 }
