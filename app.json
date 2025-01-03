@@ -25,7 +25,7 @@
     {
       "id": "homevolt",
       "name": {
-        "en": "Homevolt Battery"
+        "en": "Homevolt battery"
       },
       "class": "battery",
       "capabilities": [
@@ -63,9 +63,24 @@
         "large": "/drivers/homevolt/assets/logo-large.png",
         "small": "/drivers/homevolt/assets/logo-small.png"
       },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "discovery": "homevolt",
       "pair": [
         {
-          "id": "input"
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
         }
       ],
       "settings": [
@@ -146,6 +161,27 @@
       "insights": true,
       "getable": true,
       "setable": false
+    }
+  },
+  "discovery": {
+    "homevolt": {
+      "type": "mdns-sd",
+      "mdns-sd": {
+        "name": "http",
+        "protocol": "tcp"
+      },
+      "id": "{{address}}",
+      "conditions": [
+        [
+          {
+            "field": "name",
+            "match": {
+              "type": "string",
+              "value": "Homevolt"
+            }
+          }
+        ]
+      ]
     }
   }
 }

@@ -1,34 +1,34 @@
-const { Driver } = require('homey');
+const Homey = require('homey');
 
-class HomevoltDriver extends Driver {
-  async onPair(session) {
-    this.log('Pairing session started');
 
-    // Listen for the `input` step from the pairing UI
-    session.setHandler('input', async (data) => {
-      const ipAddress = data.ipaddress;
-      this.log('Received IP address:', ipAddress);
-    
-      // Validate the IP
-      try {
-        const response = await fetch(`http://${ipAddress}/ems.json`);
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
-        }
-    
-        // Return device data in the correct structure
-        const deviceData = {
-          name: `Homevolt (${ipAddress})`,
-          data: { id: ipAddress }
-        };
-        this.log('Device data validated:', deviceData);
-    
-        return deviceData; // Return the structured data
-      } catch (error) {
-        this.log('Error during device validation:', error.message);
-        throw new Error('Invalid IP address or unreachable device.');
-      }
+class HomevoltDriver extends Homey.Driver {
+  // This method is called when a user is adding a device
+  // and the 'list_devices' view is called
+  // Extend this method to add sensors as devices later
+  async onPairListDevices() {
+    this.log('Searching for devices with mDNS ...');
+
+    const discoveryStrategy = this.getDiscoveryStrategy();
+
+    const discoveryResults = discoveryStrategy.getDiscoveryResults();
+  
+    const devices = Object.values(discoveryResults).map(discoveryResult => {
+      return {
+        name: `Homevolt`,
+        data: {
+          id: (discoveryResult.host.match(/homevolt-([a-zA-Z0-9]+)\.local/) || [])[1],
+          ip: discoveryResult.id,
+        },
+      };
     });
+
+    this.log('Found devices:', devices);
+    return devices;
+  }
+
+  // this method is called when the app is started and the Driver is inited
+  async onInit() {
+    this.log('HomevoltDriver initialized');
   }
 }
 

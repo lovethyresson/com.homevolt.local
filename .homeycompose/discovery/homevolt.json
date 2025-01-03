@@ -1,0 +1,19 @@
+{
+  "type": "mdns-sd",
+  "mdns-sd": {
+    "name": "http",
+    "protocol": "tcp"
+  },
+  "id": "{{address}}",
+  "conditions": [
+    [
+      {
+        "field": "name",
+        "match": {
+          "type": "string",
+          "value": "Homevolt"
+        }
+      }
+    ]
+  ]
+}

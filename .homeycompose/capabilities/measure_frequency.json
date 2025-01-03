@@ -1,16 +1,16 @@
 {
-    "type": "number",
-    "title": {
-      "en": "Grid Frequency"
-    },
-    "desc": {
-      "en": "The currently measured grid frequency."
-    },
-    "units": {
-      "en": "Hz"
-    },
-    "insights": true,
-    "decimals": 3,
-    "getable": true,
-    "setable": false
-  }
+  "type": "number",
+  "title": {
+    "en": "Grid Frequency"
+  },
+  "desc": {
+    "en": "The currently measured grid frequency."
+  },
+  "units": {
+    "en": "Hz"
+  },
+  "insights": true,
+  "decimals": 3,
+  "getable": true,
+  "setable": false
+}
