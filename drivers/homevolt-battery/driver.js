@@ -1,7 +1,7 @@
 const Homey = require('homey');
 
 
-class HomevoltDriver extends Homey.Driver {
+class HomevoltBatteryDriver extends Homey.Driver {
   // This method is called when a user is adding a device
   // and the 'list_devices' view is called
   // Extend this method to add sensors as devices later
@@ -22,14 +22,14 @@ class HomevoltDriver extends Homey.Driver {
       };
     });
 
-    this.log('Found devices:', devices);
+    this.log('Found battery:', devices);
     return devices;
   }
 
   // this method is called when the app is started and the Driver is inited
   async onInit() {
-    this.log('HomevoltDriver initialized');
+    this.log('HomevoltBattteryDriver initialized');
   }
 }
 
-module.exports = HomevoltDriver;
+module.exports = HomevoltBatteryDriver;

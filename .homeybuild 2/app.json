@@ -31,9 +31,9 @@
       "capabilities": [
         "measure_battery",
         "measure_power",
-        "measure_power.target_power",
         "meter_power.imported",
         "meter_power.exported",
+        "measure_target_power",
         "measure_energy_available",
         "measure_temperature",
         "measure_frequency"
@@ -47,11 +47,6 @@
         "meter_power.exported": {
           "title": {
             "en": "Exported Energy"
-          }
-        },
-        "measure_power.target_power": {
-          "title": {
-            "en": "Target Power"
           }
         }
       },
@@ -113,9 +108,6 @@
       "class": "sensor",
       "capabilities": [
         "measure_power",
-        "measure_power.currentL1",
-        "measure_power.currentL2",
-        "measure_power.currentL3",
         "meter_power.imported",
         "meter_power.exported",
         "measure_signal_strength"
@@ -129,33 +121,6 @@
         "meter_power.exported": {
           "title": {
             "en": "Exported Energy"
-          }
-        },
-        "measure_power.currentL1": {
-          "title": {
-            "en": "Current L1"
-          },
-          "units": {
-            "en": "A"
-          },
-          "decimals": 2
-        },
-        "measure_power.currentL2": {
-          "title": {
-            "en": "Current L2",
-            "units": {
-              "en": "A"
-            },
-            "decimals": 2
-          }
-        },
-        "measure_power.currentL3": {
-          "title": {
-            "en": "Current L3",
-            "units": {
-              "en": "A"
-            },
-            "decimals": 2
           }
         }
       },
@@ -252,6 +217,21 @@
       },
       "insights": true,
       "decimals": 3,
+      "getable": true,
+      "setable": false
+    },
+    "measure_target_power": {
+      "type": "number",
+      "title": {
+        "en": "Target Power"
+      },
+      "desc": {
+        "en": "The target power output of the system in watts."
+      },
+      "units": {
+        "en": "W"
+      },
+      "insights": true,
       "getable": true,
       "setable": false
     }

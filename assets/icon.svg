@@ -1,13 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 200 400" style="enable-background:new 0 0 200 400;" xml:space="preserve">
-  <g>
-    <!-- Outer rounded rectangle with thick black outline -->
-    <rect x="10" y="10" width="180" height="380" rx="20" ry="20" fill="none" stroke="black" stroke-width="8"/>
-
-    <!-- Divider line with thick black outline -->
-    <rect x="10" y="190" width="180" height="20" fill="none" stroke="black" stroke-width="8" />
-
-    <!-- Light bar outline -->
-    <rect x="60" y="195" width="80" height="10" fill="none" stroke="black" stroke-width="4" />
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120" viewBox="0 0 300 120">
+  <!-- Rectangles -->
+  <rect x="30" y="35" width="50" height="50" fill="none" stroke="black" stroke-width="4" />
+  <rect x="100" y="35" width="50" height="50" fill="none" stroke="black" stroke-width="4" />
+  <rect x="170" y="35" width="50" height="50" fill="none" stroke="black" stroke-width="4" />
+  <rect x="240" y="35" width="50" height="50" fill="none" stroke="black" stroke-width="4" />
 </svg>

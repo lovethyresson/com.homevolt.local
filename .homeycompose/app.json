@@ -8,7 +8,7 @@
   },
   "version": "0.2.0",
   "sdk": 3,
-  "compatibility": ">=12.0.0",
+  "compatibility": ">=12.2.0",
   "author": {
     "name": "Love Thyresson",
     "email": "love@thyresson.se"
@@ -22,9 +22,15 @@
   "category": "energy",
   "drivers": [
     {
-      "id": "homevolt",
+      "id": "homevolt-battery",
       "name": {
         "en": "Homevolt battery"
+      }
+    },
+    {
+      "id": "homevolt-sensor",
+      "name": {
+        "en": "Homevolt sensor"
       }
     }
   ]

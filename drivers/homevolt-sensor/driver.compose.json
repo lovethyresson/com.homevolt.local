@@ -1,0 +1,86 @@
+{
+  "name": {
+    "en": "Homevolt sensors"
+  },
+  "class": "sensor",
+  "capabilities": [
+    "measure_power",
+    "measure_power.currentL1",
+    "measure_power.currentL2",
+    "measure_power.currentL3",
+    "meter_power.imported",
+    "meter_power.exported",
+    "measure_signal_strength"
+  ],
+  "capabilitiesOptions": {
+    "meter_power.imported": {
+      "title": { "en": "Imported Energy" }
+    },
+    "meter_power.exported": {
+      "title": { "en": "Exported Energy" }
+    },
+    "measure_power.currentL1": {
+      "title": { "en": "Current L1" },
+      "units": { "en": "A" },
+      "decimals": 2
+    },
+    "measure_power.currentL2": {
+      "title": { "en": "Current L2",
+      "units": { "en": "A" },
+      "decimals": 2
+     }
+    },
+    "measure_power.currentL3": {
+      "title": { "en": "Current L3",
+      "units": { "en": "A" },
+      "decimals": 2
+     }
+    }
+  },
+  "energy": {
+    "cumulative": true,
+    "cumulativeImportedCapability": "meter_power.imported",
+    "cumulativeExportedCapability": "meter_power.exported"
+  },
+  "images": {
+    "xlarge": "/drivers/homevolt-sensor/assets/images/pulse-ct_xlarge.png",
+    "large": "/drivers/homevolt-sensor/assets/images/pulse-ct_large.png",
+    "small": "/drivers/homevolt-sensor/assets/images/pulse-ct_small.png"
+  },
+  "icon": "/drivers/homevolt-sensor/assets/icon.svg",
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "lan"
+  ],
+  "discovery": "homevolt",
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "settings": [
+    {
+      "id": "pollingInterval",
+      "type": "number",
+      "label": {
+        "en": "Polling Interval (seconds)"
+      },
+      "hint": {
+        "en": "Interval in seconds for fetching data (default: 5 seconds)."
+      },
+      "default": 5,
+      "min": 1,
+      "max": 60
+    }
+  ]
+}

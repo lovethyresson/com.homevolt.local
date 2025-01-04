@@ -1,5 +1,5 @@
 {
-  "id": "homevolt",
+  "id": "homevolt-battery",
   "name": {
     "en": "Homevolt battery"
   },
@@ -7,9 +7,9 @@
   "capabilities": [
     "measure_battery",
     "measure_power",
+    "measure_power.target_power",
     "meter_power.imported",
     "meter_power.exported",
-    "measure_target_power",
     "measure_energy_available",
     "measure_temperature",
     "measure_frequency"
@@ -20,6 +20,9 @@
     },
     "meter_power.exported": {
       "title": { "en": "Exported Energy" }
+    },
+    "measure_power.target_power": {
+      "title": { "en": "Target Power" }
     }
   },
   "energy": {
@@ -30,9 +33,11 @@
     "batteries": ["INTERNAL"]
   },
   "images": {
-    "large": "/drivers/homevolt/assets/logo-large.png",
-    "small": "/drivers/homevolt/assets/logo-small.png"
+    "xlarge": "/drivers/homevolt-battery/assets/images/homevolt_xlarge.png",
+    "large": "/drivers/homevolt-battery/assets/images/homevolt_large.png",
+    "small": "/drivers/homevolt-battery/assets/images/homevolt_small.png"
   },
+  "icon": "/drivers/homevolt-battery/assets/icon.svg",
   "platforms": [
     "local"
   ],

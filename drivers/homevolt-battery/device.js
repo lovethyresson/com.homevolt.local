@@ -1,6 +1,6 @@
 const { Device } = require('homey');
 
-class HomevoltDevice extends Device {
+class HomevoltBatteryDevice extends Device {
 
   onDiscoveryResult(discoveryResult) {
     // Return a truthy value here if the discovery result matches your device.
@@ -39,7 +39,10 @@ class HomevoltDevice extends Device {
     this.ip = this.getData().ip;
     this.pollingInterval = (this.getSetting('pollingInterval') || 5) * 1000;
 
-    this.log(`Device initialized: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
+    this.log(`Initializing battery device: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
+
+    // Get initial values
+    this.fetchData().catch(this.error);
 
     await this.setAvailable();
     this.startPolling();
@@ -95,7 +98,7 @@ updateCapabilities(data) {
     // Update capabilities with the fetched data
     
     if (batteryTargetPower !== undefined && batteryTargetPower !== null) {
-      this.setCapabilityValue('measure_target_power', batteryTargetPower).catch(this.error);
+      this.setCapabilityValue('measure_power.target_power', batteryTargetPower).catch(this.error);
   }
   if (batteryChargePower !== undefined && batteryChargePower !== null) {
       this.setCapabilityValue('measure_power', batteryChargePower).catch(this.error);
@@ -119,7 +122,6 @@ updateCapabilities(data) {
       this.setCapabilityValue('measure_frequency', batteryGridFrequency).catch(this.error);
   }
 
-  this.log(data);
   this.setAvailable().catch(this.error); // Ensure the device remains available after updates
 }
 
@@ -147,4 +149,4 @@ updateCapabilities(data) {
   }
 }
 
-module.exports = HomevoltDevice;
+module.exports = HomevoltBatteryDevice;
