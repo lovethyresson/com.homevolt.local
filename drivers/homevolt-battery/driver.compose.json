@@ -27,9 +27,6 @@
   },
   "energy": {
     "homeBattery": true,
-    "cumulative": true,
-    "cumulativeImportedCapability": "meter_power.imported",
-    "cumulativeExportedCapability": "meter_power.exported",
     "batteries": ["INTERNAL"]
   },
   "images": {
