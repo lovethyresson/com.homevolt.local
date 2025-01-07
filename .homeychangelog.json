@@ -10,5 +10,8 @@
   },
   "0.2.0": {
     "en": "Add discovery instead of manual IP input"
+  },
+  "0.3.0": {
+    "en": "Add grid & solar sensors. Fix cumulative energy capabiliyt for battery. Add app/driver images and icons."
   }
 }
