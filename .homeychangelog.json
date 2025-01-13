@@ -16,5 +16,8 @@
   },
   "0.3.1": {
     "en": "Workaround for driver images."
+  },
+  "0.4.0": {
+    "en": "Add translations"
   }
 }

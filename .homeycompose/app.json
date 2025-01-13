@@ -3,14 +3,14 @@
   "name": {
     "en": "Homevolt"
   },
-"description": {
+  "description": {
     "en": "Home energy at your fingertips",
     "nl": "Energie thuis binnen handbereik",
     "de": "Energie für Ihr Zuhause in greifbarer Nähe",
     "fr": "L'énergie domestique à portée de main",
     "es": "Energía para el hogar al alcance de tu mano"
   },
-  "version": "0.3.1",
+  "version": "0.4.0",
   "sdk": 3,
   "compatibility": ">=12.2.0",
   "author": {
@@ -26,7 +26,7 @@
   "category": "energy",
   "bugs": {
     "url": "https://github.com/lovethyresson/com.homevolt.local/issues"
-    },
+  },
   "source": "https://github.com/lovethyresson/com.homevolt.local",
   "drivers": [
     {
