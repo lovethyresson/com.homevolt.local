@@ -21,6 +21,11 @@
     "xlarge": "/assets/images/homevolt-xlarge.png"
   },
   "category": "energy",
+  "bugs": {
+    "url": "https://github.com/lovethyresson/com.homevolt.local/issues"
+  },
+  "source": "https://github.com/lovethyresson/com.homevolt.local",
+  "support": "mailto:love@thyresson.se",
   "drivers": [
     {
       "id": "homevolt-battery",
