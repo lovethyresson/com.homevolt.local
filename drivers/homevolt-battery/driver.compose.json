@@ -16,13 +16,27 @@
   ],
   "capabilitiesOptions": {
     "meter_power.imported": {
-      "title": { "en": "Imported Energy" }
+      "title": {
+        "en": "Imported Energy",
+        "nl": "Geïmporteerde Energie",
+        "de": "Importierte Energie",
+        "fr": "Énergie Importée",
+        "es": "Energía Importada",
+        "sv": "Importerad Energi"
+      }
     },
     "meter_power.exported": {
       "title": { "en": "Exported Energy" }
     },
-    "measure_power.target_power": {
-      "title": { "en": "Target Power" }
+    "meter_power.exported": {
+      "title": {
+        "en": "Exported Energy",
+        "nl": "Geëxporteerde Energie",
+        "de": "Exportierte Energie",
+        "fr": "Énergie Exportée",
+        "es": "Energía Exportada",
+        "sv": "Exporterad Energi"
+      }
     }
   },
   "energy": {

@@ -5,7 +5,11 @@
     "en": "Homevolt"
   },
   "description": {
-    "en": "Home energy at your fingertips"
+    "en": "Home energy at your fingertips",
+    "nl": "Energie thuis binnen handbereik",
+    "de": "Energie für Ihr Zuhause in greifbarer Nähe",
+    "fr": "L'énergie domestique à portée de main",
+    "es": "Energía para el hogar al alcance de tu mano"
   },
   "version": "0.3.1",
   "sdk": 3,
@@ -25,7 +29,6 @@
     "url": "https://github.com/lovethyresson/com.homevolt.local/issues"
   },
   "source": "https://github.com/lovethyresson/com.homevolt.local",
-  "support": "mailto:love@thyresson.se",
   "drivers": [
     {
       "id": "homevolt-battery",
@@ -46,17 +49,22 @@
       "capabilitiesOptions": {
         "meter_power.imported": {
           "title": {
-            "en": "Imported Energy"
+            "en": "Imported Energy",
+            "nl": "Geïmporteerde Energie",
+            "de": "Importierte Energie",
+            "fr": "Énergie Importée",
+            "es": "Energía Importada",
+            "sv": "Importerad Energi"
           }
         },
         "meter_power.exported": {
           "title": {
-            "en": "Exported Energy"
-          }
-        },
-        "measure_power.target_power": {
-          "title": {
-            "en": "Target Power"
+            "en": "Exported Energy",
+            "nl": "Geëxporteerde Energie",
+            "de": "Exportierte Energie",
+            "fr": "Énergie Exportée",
+            "es": "Energía Exportada",
+            "sv": "Exporterad Energi"
           }
         }
       },
@@ -125,40 +133,80 @@
       "capabilitiesOptions": {
         "meter_power.imported": {
           "title": {
-            "en": "Imported Energy"
+            "en": "Imported Energy",
+            "nl": "Geïmporteerde Energie",
+            "de": "Importierte Energie",
+            "fr": "Énergie Importée",
+            "es": "Energía Importada",
+            "sv": "Importerad Energi"
           }
         },
         "meter_power.exported": {
           "title": {
-            "en": "Exported Energy"
+            "en": "Exported Energy",
+            "nl": "Geëxporteerde Energie",
+            "de": "Exportierte Energie",
+            "fr": "Énergie Exportée",
+            "es": "Energía Exportada",
+            "sv": "Exporterad Energi"
           }
         },
         "measure_power.currentL1": {
           "title": {
-            "en": "Current L1"
+            "en": "Current L1",
+            "nl": "Stroom L1",
+            "de": "Strom L1",
+            "fr": "Courant L1",
+            "es": "Corriente L1",
+            "sv": "Ström L1"
           },
           "units": {
-            "en": "A"
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
           },
           "decimals": 2
         },
         "measure_power.currentL2": {
           "title": {
             "en": "Current L2",
-            "units": {
-              "en": "A"
-            },
-            "decimals": 2
-          }
+            "nl": "Stroom L2",
+            "de": "Strom L2",
+            "fr": "Courant L2",
+            "es": "Corriente L2",
+            "sv": "Ström L2"
+          },
+          "units": {
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
+          },
+          "decimals": 2
         },
         "measure_power.currentL3": {
           "title": {
             "en": "Current L3",
-            "units": {
-              "en": "A"
-            },
-            "decimals": 2
-          }
+            "nl": "Stroom L3",
+            "de": "Strom L3",
+            "fr": "Courant L3",
+            "es": "Corriente L3",
+            "sv": "Ström L3"
+          },
+          "units": {
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
+          },
+          "decimals": 2
         }
       },
       "energy": {

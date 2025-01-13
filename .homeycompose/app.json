@@ -3,8 +3,12 @@
   "name": {
     "en": "Homevolt"
   },
-  "description": {
-    "en": "Home energy at your fingertips"
+"description": {
+    "en": "Home energy at your fingertips",
+    "nl": "Energie thuis binnen handbereik",
+    "de": "Energie für Ihr Zuhause in greifbarer Nähe",
+    "fr": "L'énergie domestique à portée de main",
+    "es": "Energía para el hogar al alcance de tu mano"
   },
   "version": "0.3.1",
   "sdk": 3,
