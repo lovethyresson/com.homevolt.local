@@ -13,5 +13,8 @@
   },
   "0.3.0": {
     "en": "Add grid & solar sensors. Fix cumulative energy capabiliyt for battery. Add app/driver images and icons."
+  },
+  "0.3.1": {
+    "en": "Workaround for driver images."
   }
 }

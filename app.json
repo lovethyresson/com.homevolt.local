@@ -7,7 +7,7 @@
   "description": {
     "en": "Home energy at your fingertips"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "sdk": 3,
   "compatibility": ">=12.2.0",
   "author": {
@@ -62,9 +62,9 @@
         ]
       },
       "images": {
-        "xlarge": "/drivers/homevolt-battery/assets/images/homevolt_xlarge.png",
-        "large": "/drivers/homevolt-battery/assets/images/homevolt_large.png",
-        "small": "/drivers/homevolt-battery/assets/images/homevolt_small.png"
+        "xlarge": "/drivers/homevolt-battery/assets/images/xlarge.png",
+        "large": "/drivers/homevolt-battery/assets/images/large.png",
+        "small": "/drivers/homevolt-battery/assets/images/small.png"
       },
       "icon": "/drivers/homevolt-battery/assets/icon.svg",
       "platforms": [
@@ -162,9 +162,9 @@
         "cumulativeExportedCapability": "meter_power.exported"
       },
       "images": {
-        "xlarge": "/drivers/homevolt-sensor/assets/images/pulse-ct_xlarge.png",
-        "large": "/drivers/homevolt-sensor/assets/images/pulse-ct_large.png",
-        "small": "/drivers/homevolt-sensor/assets/images/pulse-ct_small.png"
+        "xlarge": "/drivers/homevolt-sensor/assets/images/xlarge.png",
+        "large": "/drivers/homevolt-sensor/assets/images/large.png",
+        "small": "/drivers/homevolt-sensor/assets/images/small.png"
       },
       "icon": "/drivers/homevolt-sensor/assets/icon.svg",
       "platforms": [
