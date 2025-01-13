@@ -43,9 +43,9 @@
     "cumulativeExportedCapability": "meter_power.exported"
   },
   "images": {
-    "xlarge": "/drivers/homevolt-sensor/assets/images/pulse-ct_xlarge.png",
-    "large": "/drivers/homevolt-sensor/assets/images/pulse-ct_large.png",
-    "small": "/drivers/homevolt-sensor/assets/images/pulse-ct_small.png"
+    "xlarge": "/drivers/homevolt-sensor/assets/images/xlarge.png",
+    "large": "/drivers/homevolt-sensor/assets/images/large.png",
+    "small": "/drivers/homevolt-sensor/assets/images/small.png"
   },
   "icon": "/drivers/homevolt-sensor/assets/icon.svg",
   "platforms": [

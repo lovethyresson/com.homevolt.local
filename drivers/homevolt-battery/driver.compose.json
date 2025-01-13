@@ -30,9 +30,9 @@
     "batteries": ["INTERNAL"]
   },
   "images": {
-    "xlarge": "/drivers/homevolt-battery/assets/images/homevolt_xlarge.png",
-    "large": "/drivers/homevolt-battery/assets/images/homevolt_large.png",
-    "small": "/drivers/homevolt-battery/assets/images/homevolt_small.png"
+    "xlarge": "/drivers/homevolt-battery/assets/images/xlarge.png",
+    "large": "/drivers/homevolt-battery/assets/images/large.png",
+    "small": "/drivers/homevolt-battery/assets/images/small.png"
   },
   "icon": "/drivers/homevolt-battery/assets/icon.svg",
   "platforms": [
