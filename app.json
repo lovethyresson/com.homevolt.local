@@ -42,7 +42,7 @@
         "measure_power.target_power",
         "meter_power.imported",
         "meter_power.exported",
-        "measure_energy_available",
+        "meter_power.available",
         "measure_temperature",
         "measure_frequency"
       ],
@@ -75,6 +75,16 @@
             "fr": "Énergie Exportée",
             "es": "Energía Exportada",
             "sv": "Exporterad Energi"
+          }
+        },
+        "meter_power.available": {
+          "title": {
+            "en": "Available Energy",
+            "nl": "Beschikbare Energie",
+            "de": "Verfügbare Energie",
+            "fr": "Énergie disponible",
+            "es": "Energía disponible",
+            "sv": "Tillgänglig energi"
           }
         }
       },
@@ -269,46 +279,6 @@
     }
   ],
   "capabilities": {
-    "measure_discharge_power": {
-      "type": "number",
-      "title": {
-        "en": "Discharge Power"
-      },
-      "desc": {
-        "en": "The current discharge power of the system in watts."
-      },
-      "units": {
-        "en": "W"
-      },
-      "getable": true,
-      "setable": false
-    },
-    "measure_energy_available": {
-      "type": "number",
-      "title": {
-        "en": "Available Energy",
-        "nl": "Beschikbare Energie",
-        "de": "Verfügbare Energie",
-        "fr": "Énergie disponible",
-        "es": "Energía disponible",
-        "sv": "Tillgänglig energi"
-      },
-      "desc": {
-        "en": "The available energy in the battery (kWh).",
-        "nl": "De beschikbare energie in de batterij (kWh).",
-        "de": "Die verfügbare Energie in der Batterie (kWh).",
-        "fr": "L'énergie disponible dans la batterie (kWh).",
-        "es": "La energía disponible en la batería (kWh).",
-        "sv": "Den tillgängliga energin i batteriet (kWh)."
-      },
-      "units": {
-        "en": "kWh"
-      },
-      "insights": true,
-      "decimals": 2,
-      "getable": true,
-      "setable": false
-    },
     "measure_frequency": {
       "type": "number",
       "title": {

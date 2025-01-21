@@ -110,7 +110,7 @@ updateCapabilities(data) {
       this.setCapabilityValue('meter_power.exported', batteryExportedKWh).catch(this.error);
   }
   if (batteryAvailableEnergykWh !== undefined && batteryAvailableEnergykWh !== null) {
-      this.setCapabilityValue('measure_energy_available', batteryAvailableEnergykWh).catch(this.error);
+      this.setCapabilityValue('meter_power.available', batteryAvailableEnergykWh).catch(this.error);
   }
   if (batteryAvailableEnergyPct !== undefined && batteryAvailableEnergyPct !== null) {
       this.setCapabilityValue('measure_battery', batteryAvailableEnergyPct).catch(this.error);
