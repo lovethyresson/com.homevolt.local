@@ -25,5 +25,8 @@
   },
   "0.5.0": {
     "en": "Breaking change due to capability switch for avaialble energy. Fix translations for custom measures."
+  },
+  "0.5.1": {
+    "en": "Tweaks to discovery logic"
   }
 }
