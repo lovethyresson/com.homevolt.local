@@ -9,9 +9,11 @@ class HomevoltBatteryDriver extends Homey.Driver {
     this.log('Searching for devices with mDNS ...');
 
     const discoveryStrategy = this.getDiscoveryStrategy();
-
     const discoveryResults = discoveryStrategy.getDiscoveryResults();
   
+    // Log discovery results
+    this.log('Battery discovery results:', discoveryResults);
+
     const devices = Object.values(discoveryResults).map(discoveryResult => {
       return {
         name: `Homevolt`,

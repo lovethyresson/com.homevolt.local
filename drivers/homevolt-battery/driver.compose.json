@@ -25,8 +25,15 @@
         "sv": "Importerad Energi"
       }
     },
-    "meter_power.exported": {
-      "title": { "en": "Exported Energy" }
+    "measure_power.target_power": {
+      "title": { 
+        "en": "Target Power",
+        "nl": "Doelvermogen",
+        "de": "Zielleistung",
+        "fr": "Puissance cible",
+        "es": "Potencia objetivo",
+        "sv": "Måleffekt"
+      }
     },
     "meter_power.exported": {
       "title": {

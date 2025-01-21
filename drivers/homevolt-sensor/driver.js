@@ -5,17 +5,20 @@ class HomevoltSensorDriver extends Homey.Driver {
    * Called during device pairing to list available sensors
    */
   async onPairListDevices() {
-    this.log('Searching for sensors...');
+    this.log('Searching for sensors with mDNS...');
 
     // Retrieve discovery strategy
     const discoveryStrategy = this.getDiscoveryStrategy();
     const discoveryResults = discoveryStrategy.getDiscoveryResults();
 
+    // Log discovery results
+    this.log('Sensor discovery results:', discoveryResults);
+
     // Map discovery results to sensor devices
     const devices = Object.values(discoveryResults).flatMap(discoveryResult => {
       const ip = discoveryResult.id;
 
-      // Example data structure for "grid" and "solar" sensors
+      // Data structure for "grid" and "solar" sensors
       return [
         {
           name: `Grid Sensor`,

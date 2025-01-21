@@ -57,6 +57,16 @@
             "sv": "Importerad Energi"
           }
         },
+        "measure_power.target_power": {
+          "title": {
+            "en": "Target Power",
+            "nl": "Doelvermogen",
+            "de": "Zielleistung",
+            "fr": "Puissance cible",
+            "es": "Potencia objetivo",
+            "sv": "Måleffekt"
+          }
+        },
         "meter_power.exported": {
           "title": {
             "en": "Exported Energy",
@@ -276,10 +286,20 @@
     "measure_energy_available": {
       "type": "number",
       "title": {
-        "en": "Available Energy"
+        "en": "Available Energy",
+        "nl": "Beschikbare Energie",
+        "de": "Verfügbare Energie",
+        "fr": "Énergie disponible",
+        "es": "Energía disponible",
+        "sv": "Tillgänglig energi"
       },
       "desc": {
-        "en": "The available energy in the battery (kWh)."
+        "en": "The available energy in the battery (kWh).",
+        "nl": "De beschikbare energie in de batterij (kWh).",
+        "de": "Die verfügbare Energie in der Batterie (kWh).",
+        "fr": "L'énergie disponible dans la batterie (kWh).",
+        "es": "La energía disponible en la batería (kWh).",
+        "sv": "Den tillgängliga energin i batteriet (kWh)."
       },
       "units": {
         "en": "kWh"
