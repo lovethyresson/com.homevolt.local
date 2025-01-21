@@ -19,7 +19,7 @@ class HomevoltBatteryDriver extends Homey.Driver {
         name: `Homevolt`,
         data: {
           id: (discoveryResult.host.match(/homevolt-([a-zA-Z0-9]+)\.local/) || [])[1],
-          ip: discoveryResult.id,
+          ip: discoveryResult.address,
         },
       };
     });

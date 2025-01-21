@@ -16,7 +16,7 @@ class HomevoltSensorDriver extends Homey.Driver {
 
     // Map discovery results to sensor devices
     const devices = Object.values(discoveryResults).flatMap(discoveryResult => {
-      const ip = discoveryResult.id;
+      const ip = discoveryResult.address;
 
       // Data structure for "grid" and "solar" sensors
       return [
