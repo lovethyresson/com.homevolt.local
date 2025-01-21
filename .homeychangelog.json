@@ -28,5 +28,8 @@
   },
   "0.5.1": {
     "en": "Tweaks to discovery logic"
+  },
+  "0.5.2": {
+    "en": "Add community id, further tweaks to discovery logic"
   }
 }
