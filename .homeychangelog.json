@@ -22,5 +22,8 @@
   },
   "0.4.1": {
     "en": "Fix translations, better logging."
+  },
+  "0.5.0": {
+    "en": "Breaking change due to capability switch for avaialble energy. Fix translations for custom measures."
   }
 }
