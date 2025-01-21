@@ -312,10 +312,20 @@
     "measure_frequency": {
       "type": "number",
       "title": {
-        "en": "Grid Frequency"
+        "en": "Grid Frequency",
+        "nl": "Netfrequentie",
+        "de": "Netzfrequenz",
+        "fr": "Fréquence du réseau",
+        "es": "Frecuencia de la red",
+        "sv": "Nätfrekvens"
       },
       "desc": {
-        "en": "The currently measured grid frequency."
+        "en": "The currently measured grid frequency.",
+        "nl": "De momenteel gemeten netfrequentie.",
+        "de": "Die aktuell gemessene Netzfrequenz.",
+        "fr": "La fréquence du réseau mesurée actuellement.",
+        "es": "La frecuencia de la red medida actualmente.",
+        "sv": "Den för närvarande uppmätta nätfrekvensen."
       },
       "units": {
         "en": "Hz"
