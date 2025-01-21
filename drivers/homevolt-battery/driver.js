@@ -14,11 +14,14 @@ class HomevoltBatteryDriver extends Homey.Driver {
     // Log discovery results
     this.log('Battery discovery results:', discoveryResults);
 
+    
+    // id retrieval is a bit messy but a workaround until the ID is provided isolated in the discovery result
     const devices = Object.values(discoveryResults).map(discoveryResult => {
+      const match = discoveryResult.host.match(/homevolt-([a-zA-Z0-9]+)(?:\.local)?$/);
       return {
         name: `Homevolt`,
         data: {
-          id: (discoveryResult.host.match(/homevolt-([a-zA-Z0-9]+)\.local/) || [])[1],
+          id: match ? match[1] : discoveryResult.id, // Fallback to `discoveryResult.id` if no match
           ip: discoveryResult.address,
         },
       };
