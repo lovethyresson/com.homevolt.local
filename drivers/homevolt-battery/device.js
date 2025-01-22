@@ -1,4 +1,5 @@
 const { Device } = require('homey');
+const fetch = require('node-fetch');
 
 class HomevoltBatteryDevice extends Device {
 

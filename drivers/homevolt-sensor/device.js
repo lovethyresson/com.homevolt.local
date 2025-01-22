@@ -1,4 +1,5 @@
 const { Device } = require('homey');
+const fetch = require('node-fetch');
 
 class HomevoltSensorDevice extends Device {
   async onInit() {
