@@ -90,7 +90,8 @@ updateCapabilities(data) {
     const batteryExportedKWh = data.ems[0]?.ems_data?.energy_produced / 1000;    // Accumulated exported energy, scale to kWh
     const batteryChargePower = data.ems[0]?.ems_data?.power;                     // Current charge power
     const batteryTargetPower = data.ems[0]?.ems_control?.pwr_ref;                // Target power
-    const batteryAvailableEnergykWh = data.ems[0]?.bms_data?.[0]?.energy_avail;  // Available capacity in battery in kWh
+    const batteryAvailableEnergykWh = data.ems[0]?.bms_data?.reduce(             // Loop through multiple packs to summarize vailable capacity in battery in kWh
+      (total, pack) => total + (pack.energy_avail || 0), 0 ) / 1000;
     const batteryAvailableEnergyPct = data.ems[0]?.ems_data?.soc_avg / 100;      // Available capacity in battery in %
     const batteryTemperature = data.ems[0]?.ems_data?.sys_temp / 10;             // System temperature
     const batteryGridFrequency = data.ems[0]?.ems_data?.frequency / 1000;        // Grid frequency, scale to Hz
