@@ -31,5 +31,8 @@
   },
   "0.5.2": {
     "en": "Add community id, further tweaks to discovery logic"
+  },
+  "0.5.3": {
+    "en": "Fix support for Homey 2016-2019"
   }
 }
