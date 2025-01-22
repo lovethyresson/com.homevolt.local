@@ -34,5 +34,8 @@
   },
   "0.5.3": {
     "en": "Fix support for Homey 2016-2019"
+  },
+  "0.5.4": {
+    "en": "Handle batteries with two battery packs correctly"
   }
 }
