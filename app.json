@@ -38,30 +38,6 @@
     "url": "https://github.com/lovethyresson/com.homevolt.local/issues"
   },
   "source": "https://github.com/lovethyresson/com.homevolt.local",
-  "settings": [
-    {
-      "id": "pollingInterval",
-      "type": "text",
-      "title": {
-        "en": "Polling Interval (seconds)",
-        "nl": "Polling-interval (seconden)",
-        "de": "Abfrageintervall (Sekunden)",
-        "fr": "Intervalle de sondage (secondes)",
-        "es": "Intervalo de sondeo (segundos)",
-        "sv": "Pollningsintervall (sekunder)"
-      },
-      "hint": {
-        "en": "Interval in seconds for fetching data (default: 5 seconds).",
-        "nl": "Interval in seconden voor het ophalen van gegevens (standaard: 5 seconden).",
-        "de": "Intervall in Sekunden zum Abrufen von Daten (Standard: 5 Sekunden).",
-        "fr": "Intervalle en secondes pour récupérer les données (par défaut : 5 secondes).",
-        "es": "Intervalo en segundos para obtener datos (predeterminado: 5 segundos).",
-        "sv": "Intervall i sekunder för hämtning av data (standard: 5 sekunder)."
-      },
-      "placeholder": "5",
-      "required": false
-    }
-  ],
   "flow": {
     "triggers": [
       {

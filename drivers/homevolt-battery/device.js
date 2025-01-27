@@ -45,17 +45,26 @@ class HomevoltBatteryDevice extends Device {
     this.fetchData().catch(this.error);
 
     // Register capability listener for battery status
-    
     const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
     cardConditionBatteryStatus.registerRunListener(async (args, state) => {
-      const data = await fetchData();
-      //this.log(args);
-      this.log(`Data: ${data}`);
-      const batteryStatus = data.ems[0]?.op_state_str;
-      //this.log(`Checking battery status: ${args.battery_status} vs ${batteryStatus}`);
-      return batteryStatus === args.battery_status;
+      try {
+        // Fetch data using the app's getStatus function
+        const data = await this.homey.app.getStatus({ address: this.ip });
+    
+        // Extract battery status from fetched data
+        const batteryStatus = data.ems[0]?.op_state_str;
+    
+        // Log the values for debugging
+        this.log(`Args state (selected by user): ${args.state}`);
+        this.log(`Device battery status (from data): ${batteryStatus}`);
+    
+        // Compare user-selected state with actual battery status
+        return batteryStatus === args.state;
+      } catch (error) {
+        this.error('Error in battery_status condition:', error.message);
+        return false; // Fail safely
       }
-    );
+    });
     
 
     // Get the initial polling interval from the app
@@ -104,7 +113,7 @@ async fetchData() {
   try {
     const data = await this.homey.app.getStatus({ address: this.ip });
     this.updateCapabilities(data);
-    //return data;
+
   } catch (error) {
     this.log('Error fetching data:', error.message);
     await this.setUnavailable('Error fetching data');

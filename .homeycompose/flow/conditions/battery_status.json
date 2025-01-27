@@ -31,7 +31,7 @@
         "filter": "driver_id=homevolt-battery"
       },
       {
-        "name": "state",
+        "name": "battery_status",
         "type": "dropdown",
         "title": {
           "en": "Status",
