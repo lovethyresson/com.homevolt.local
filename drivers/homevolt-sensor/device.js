@@ -2,6 +2,34 @@ const { Device } = require('homey');
 const fetch = require('node-fetch');
 
 class HomevoltSensorDevice extends Device {
+  onDiscoveryResult(discoveryResult) {
+    // Return a truthy value here if the discovery result matches your device.
+    return discoveryResult.id === this.getData().id;
+  }
+
+  async onDiscoveryAvailable(discoveryResult) {
+    try {
+      this.ip = discoveryResult.address; // Update IP address
+      await this.setAvailable(); // Mark as available
+      this.log(`Device is available at ${this.ip}`);
+    } catch (error) {
+      this.log('Error in onDiscoveryAvailable:', error.message);
+    }
+  }
+
+  async onDiscoveryAddressChanged(discoveryResult) {
+    this.ip = discoveryResult.address; // Update IP address
+    this.log(`Address changed to ${this.ip}`);
+    await this.setAvailable();
+  }
+
+
+  async onDiscoveryLastSeenChanged(discoveryResult) {
+    this.log(`Device last seen at ${discoveryResult.lastSeen}`);
+    // Optionally handle reconnection logic here
+  }
+  
+
   async onInit() {
     this.log(`Initializing sensor device: ${this.getName()} (${this.getData().type})`);
 
