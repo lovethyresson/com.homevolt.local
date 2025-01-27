@@ -60,24 +60,5 @@
               "sv": "Homevolt-sensor"
           }
       }
-  ],
-  "flow": {
-    "conditions": [
-        {
-            "id": "battery_status",
-            "title": {
-                "en": "Battery status is"
-            },
-            "args": [
-                {
-                    "name": "battery_status",
-                    "type": "dropdown",
-                    "title": {
-                        "en": "Battery Status"
-                    }
-                }
-            ]
-        }
-    ]
-  }
+  ]
 }
