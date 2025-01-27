@@ -5,9 +5,12 @@ Monitor your charge level, charge/discharge pattern and even grid frequency from
 
 
 ## GETTING STARTED
-1. Enable the local web server on your Homevolt battery
-2. Install the Homevolt app for Homey.
-3. Add Homey battery device (the actual homevolt battery) and optionally Homevolt sensors (grid represents incoming power to the building, solar represents power from solar).
+1. Ensure the local web server is enabled (without password)
+2. Install the Homevolt for Homey app
+3. Add your Homevolt battery and sensors
+4. Make sure you configure your sensors as per your requirement. If the Grid sensor is your only incoming measurement, feel free to use that. If not, disable the contribution to home energy in the advanced settings.
+
+---
 
 
 ## CONSIDERATIONS & LIMITATIONS
@@ -16,4 +19,9 @@ Monitor your charge level, charge/discharge pattern and even grid frequency from
 - This app is not affiliated with Homevolt/Tibber/Polarium.
 - Auth is not supported. Password needs to be disabled on the local web server.
 - No scheduling support (yet).
-- Pairing (mdns discovery) parses the hostname to detect a Homevolt device and serial number. If you change this pairing will fail.
+- Pairing (mdns discovery) parses the hostname to detect a Homevolt device and serial number. If you change this pairing will likely fail.
+
+
+## LINKS
+- Homey app store link [here](https://homey.app/en-se/app/com.homevolt.local/Homevolt/).
+- Discussions in the Homey community forum [here](https://community.homey.app/t/app-pro-homevolt/128447).
