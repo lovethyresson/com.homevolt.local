@@ -38,7 +38,6 @@ class HomevoltBatteryDevice extends Device {
     this.deviceName = this.getName();
     this.id = this.getData().id;
     this.ip = this.getData().ip;
-    this.pollingInterval = (this.getSetting('pollingInterval') || 5) * 1000;
 
     this.log(`Initializing battery device: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
 
@@ -46,6 +45,7 @@ class HomevoltBatteryDevice extends Device {
     this.fetchData().catch(this.error);
 
     // Register capability listener for battery status
+    
     const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
     cardConditionBatteryStatus.registerRunListener(async (args, state) => {
       const data = await fetchData();
@@ -55,25 +55,47 @@ class HomevoltBatteryDevice extends Device {
       //this.log(`Checking battery status: ${args.battery_status} vs ${batteryStatus}`);
       return batteryStatus === args.battery_status;
       }
-    ); 
+    );
+    
 
+    // Get the initial polling interval from the app
+    const appPollingInterval = this.homey.app.getPollingInterval();
+    this.log(`Initial polling interval: ${appPollingInterval} seconds`);
+    this.pollingInterval = appPollingInterval * 1000;
+
+
+    // Start polling
     await this.setAvailable();
     this.startPolling();
+
   }
 
   /**
    * Poll the device at the configured interval
    */
-  async startPolling() {
+  startPolling() {
+    //this.log(`Starting polling every ${this.pollingInterval / 1000} seconds`);
+
+    // Clear any existing timer
     if (this.pollingTimer) {
-      clearInterval(this.pollingTimer);
+        clearInterval(this.pollingTimer);
     }
 
+    // Start a new polling timer
     this.pollingTimer = setInterval(async () => {
-      await this.fetchData();
-    }, this.homey.app.pollingInterval * 1000);
-    
-  }
+        try {
+            await this.fetchData();
+        } catch (error) {
+            this.error('Error during polling:', error.message);
+        }
+    }, this.pollingInterval);
+}
+
+restartPolling(newInterval) {
+    this.log(`Restarting polling with new interval: ${newInterval} seconds`);
+    this.pollingInterval = newInterval * 1000; // Convert to milliseconds
+    this.startPolling();
+}
 
 /**
  * Fetch data from the device's API
@@ -146,24 +168,12 @@ updateCapabilities(data) {
 }
 
   /**
-   * Called when device settings are updated
-   */
-  async onSettings({ changedKeys, newSettings }) {
-    this.log(`Settings updated: ${changedKeys}`);
-
-    if (changedKeys.includes('pollingInterval')) {
-      this.pollingInterval = newSettings.pollingInterval * 1000;
-      this.startPolling();
-    }
-  }
-
-  /**
    * Called when the device is deleted
    */
   async onDeleted() {
-    this.log(`Device deleted: ${this.deviceName}`);
+    this.log('Device deleted, stopping polling');
     if (this.pollingTimer) {
-      clearInterval(this.pollingTimer);
+        clearInterval(this.pollingTimer);
     }
   }
 }

@@ -39,18 +39,51 @@ class HomevoltSensorDevice extends Device {
     // Get initial values
     this.fetchData().catch(this.error);
 
-    // Start polling for sensor data
+    // Get the initial polling interval from the app
+    const appPollingInterval = this.homey.app.getPollingInterval();
+    this.log(`Initial polling interval: ${appPollingInterval} seconds`);
+    this.pollingInterval = appPollingInterval * 1000;
+
+
+    // Start polling
+    await this.setAvailable();
     this.startPolling();
   }
 
-  async startPolling() {
+  /**
+   * Poll the device at the configured interval
+   */
+  startPolling() {
+    //this.log(`Starting polling every ${this.pollingInterval / 1000} seconds`);
+
+    // Clear any existing timer
     if (this.pollingTimer) {
-      clearInterval(this.pollingTimer);
+        clearInterval(this.pollingTimer);
     }
 
+    // Start a new polling timer
     this.pollingTimer = setInterval(async () => {
-      await this.fetchData();
-    }, this.homey.app.pollingInterval * 1000);
+        try {
+            await this.fetchData();
+        } catch (error) {
+            this.error('Error during polling:', error.message);
+        }
+    }, this.pollingInterval);
+}
+
+restartPolling(newInterval) {
+    this.log(`Restarting polling with new interval: ${newInterval} seconds`);
+    this.pollingInterval = newInterval * 1000; // Convert to milliseconds
+    this.startPolling();
+}
+
+  /**
+   * If app settings change, update polling interval and restart polling
+   */
+  restartPolling(newInterval) {
+      this.log(`Restarting polling with new interval: ${newInterval} seconds`);
+      this.pollingInterval = newInterval; 
+      this.startPolling();
   }
   
   async fetchData() {
