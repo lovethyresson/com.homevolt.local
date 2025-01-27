@@ -1,0 +1,6 @@
+{
+  "battery_status_charging": "Laddar",
+  "battery_status_discharging": "Laddar ur",
+  "battery_status_idle": "Vilar",
+  "battery_status_unknown": "Okänd"
+}

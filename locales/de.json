@@ -1,0 +1,6 @@
+{
+  "battery_status_charging": "Lädt",
+  "battery_status_discharging": "Entlädt",
+  "battery_status_idle": "Leerlauf",
+  "battery_status_unknown": "Unbekannt"
+}

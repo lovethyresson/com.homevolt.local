@@ -1,0 +1,15 @@
+{
+    "type": "string",
+    "title": {
+      "en": "Battery status",
+      "nl": "Batterijstatus",
+      "de": "Batteriestatus",
+      "fr": "État de la batterie",
+      "es": "Estado de la batería",
+      "sv": "Batteristatus"
+    },
+    "insights": false,
+    "getable": true,
+    "setable": false,
+    "icon": "./assets/capability_icons/battery_status.svg"
+  }

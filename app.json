@@ -19,6 +19,14 @@
     "name": "Love Thyresson",
     "email": "love@thyresson.se"
   },
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "lovethyresson"
+      }
+    }
+  },
+  "support": "https://community.homey.app/t/app-pro-homevolt/128447",
   "brandColor": "#003CFF",
   "images": {
     "small": "/assets/images/homevolt-small.png",
@@ -45,7 +53,8 @@
         "meter_power.exported",
         "meter_power.available",
         "measure_temperature",
-        "measure_frequency"
+        "measure_frequency",
+        "battery_status"
       ],
       "capabilitiesOptions": {
         "meter_power.imported": {
@@ -300,6 +309,21 @@
     }
   ],
   "capabilities": {
+    "battery_status": {
+      "type": "string",
+      "title": {
+        "en": "Battery status",
+        "nl": "Batterijstatus",
+        "de": "Batteriestatus",
+        "fr": "État de la batterie",
+        "es": "Estado de la batería",
+        "sv": "Batteristatus"
+      },
+      "insights": false,
+      "getable": true,
+      "setable": false,
+      "icon": "./assets/capability_icons/battery_status.svg"
+    },
     "measure_frequency": {
       "type": "number",
       "title": {

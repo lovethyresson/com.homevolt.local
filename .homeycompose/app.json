@@ -18,6 +18,14 @@
     "name": "Love Thyresson",
     "email": "love@thyresson.se"
   },
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "lovethyresson"
+      }
+    }
+  },
+  "support": "https://community.homey.app/t/app-pro-homevolt/128447",
   "brandColor": "#003CFF",
   "images": {
     "small": "/assets/images/homevolt-small.png",

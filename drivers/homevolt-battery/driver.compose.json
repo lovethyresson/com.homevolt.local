@@ -12,7 +12,8 @@
     "meter_power.exported",
     "meter_power.available",
     "measure_temperature",
-    "measure_frequency"
+    "measure_frequency",
+    "battery_status"
   ],
   "capabilitiesOptions": {
     "meter_power.imported": {

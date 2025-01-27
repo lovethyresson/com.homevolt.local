@@ -95,7 +95,7 @@ updateCapabilities(data) {
     const batteryAvailableEnergyPct = data.ems[0]?.ems_data?.soc_avg / 100;      // Available capacity in battery in %
     const batteryTemperature = data.ems[0]?.ems_data?.sys_temp / 10;             // System temperature
     const batteryGridFrequency = data.ems[0]?.ems_data?.frequency / 1000;        // Grid frequency, scale to Hz
-
+    const batteryStatus = data.ems[0]?.op_state_str;                             // Status of the battery
 
     // Update capabilities with the fetched data
     
@@ -123,6 +123,17 @@ updateCapabilities(data) {
   if (batteryGridFrequency !== undefined && batteryGridFrequency !== null) {
       this.setCapabilityValue('measure_frequency', batteryGridFrequency).catch(this.error);
   }
+  if (batteryStatus !== null) {
+    if (batteryStatus == 'charging') {
+      this.setCapabilityValue('battery_status', this.homey.__("battery_status_charging")).catch(this.error);
+    } else if (batteryStatus == 'discharging') {
+      this.setCapabilityValue('battery_status', this.homey.__("battery_status_discharging")).catch(this.error);
+    } else if (batteryStatus == 'idle') {
+      this.setCapabilityValue('battery_status', this.homey.__("battery_status_idle")).catch(this.error);
+    } else {
+      this.setCapabilityValue('battery_status', this.homey.__("battery_status_unknown")).catch(this.error);
+    }
+  } 
 
   this.setAvailable().catch(this.error); // Ensure the device remains available after updates
 }

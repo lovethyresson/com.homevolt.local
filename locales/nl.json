@@ -1,0 +1,6 @@
+{
+  "battery_status_charging": "Opladen",
+  "battery_status_discharging": "Ontladen",
+  "battery_status_idle": "Inactief",
+  "battery_status_unknown": "Onbekend"
+}
