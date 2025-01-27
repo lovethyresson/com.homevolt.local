@@ -37,5 +37,8 @@
   },
   "0.5.4": {
     "en": "Handle batteries with two battery packs correctly"
+  },
+  "0.6.0": {
+    "en": "Release Candidate (POSSIBLY BREAKING CHANGE): Added battery status inc. When/And flow cards. Reworked fetching logic. Polling interval setting now moved to app settings. "
   }
 }

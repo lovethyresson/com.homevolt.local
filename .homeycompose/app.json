@@ -11,7 +11,7 @@
     "fr": "L'énergie domestique à portée de main",
     "es": "Energía para el hogar al alcance de tu mano"
   },
-  "version": "0.5.4",
+  "version": "0.6.0",
   "sdk": 3,
   "compatibility": ">=12.2.0",
   "author": {
@@ -38,27 +38,27 @@
   },
   "source": "https://github.com/lovethyresson/com.homevolt.local",
   "drivers": [
-      {
-          "id": "homevolt-battery",
-          "name": {
-              "en": "Homevolt battery",
-              "nl": "Homevolt batterij",
-              "de": "Homevolt-Batterie",
-              "fr": "Batterie Homevolt",
-              "es": "Batería Homevolt",
-              "sv": "Homevolt-batteri"
-          }
-      },
-      {
-          "id": "homevolt-sensor",
-          "name": {
-              "en": "Homevolt sensor",
-              "nl": "Homevolt sensor",
-              "de": "Homevolt-Sensor",
-              "fr": "Capteur Homevolt",
-              "es": "Sensor Homevolt",
-              "sv": "Homevolt-sensor"
-          }
+    {
+      "id": "homevolt-battery",
+      "name": {
+        "en": "Homevolt battery",
+        "nl": "Homevolt batterij",
+        "de": "Homevolt-Batterie",
+        "fr": "Batterie Homevolt",
+        "es": "Batería Homevolt",
+        "sv": "Homevolt-batteri"
       }
+    },
+    {
+      "id": "homevolt-sensor",
+      "name": {
+        "en": "Homevolt sensor",
+        "nl": "Homevolt sensor",
+        "de": "Homevolt-Sensor",
+        "fr": "Capteur Homevolt",
+        "es": "Sensor Homevolt",
+        "sv": "Homevolt-sensor"
+      }
+    }
   ]
 }
