@@ -1,0 +1,92 @@
+
+{
+  "title": {
+    "en": "Status !{{is|isn't}}",
+    "es": "Estado !{{es|no es}}",
+    "de": "Status !{{ist|ist nicht}}",
+    "fr": "État !{{est|n'est pas}}",
+    "nl": "Toestand !{{is|is niet}}",
+    "sv": "Tillstånd !{{är|är inte}}"
+  },
+  "titleFormatted": {
+    "en": "Status !{{is|isn't}} [[state]]",
+    "es": "Estado !{{es|no es}} [[state]]",
+    "de": "Status !{{ist|ist nicht}} [[state]]",
+    "fr": "État !{{est|n'est pas}} [[state]]",
+    "nl": "Toestand !{{is|is niet}} [[state]]",
+    "sv": "Tillstånd !{{är|är inte}} [[state]]"
+  },
+    "hint": {
+      "en": "Checks if the current battery status equals a specific status.",
+      "es": "Comprueba si el estado actual de la batería es igual a un estado específico.",
+      "de": "Prüft, ob der aktuelle Batteriestatus einem bestimmten Status entspricht.",
+      "fr": "Vérifie si l'état actuel de la batterie correspond à un état spécifique.",
+      "nl": "Controleert of de huidige batterijstatus overeenkomt met een specifieke status.",
+      "sv": "Kontrollerar om batteriets nuvarande status motsvarar en specifik status."
+    },
+    "args": [
+      {
+        "name": "device",
+        "type": "device",
+        "filter": "driver_id=homevolt-battery"
+      },
+      {
+        "name": "state",
+        "type": "dropdown",
+        "title": {
+          "en": "Status",
+          "es": "Estado",
+          "de": "Status",
+          "fr": "État",
+          "nl": "Status",
+          "sv": "Status"
+        },
+        "values": [
+          {
+            "id": "charging",
+            "title": {
+              "en": "Charging",
+              "es": "Cargando",
+              "de": "Lädt",
+              "fr": "En charge",
+              "nl": "Opladen",
+              "sv": "Laddar"
+            }
+          },
+          {
+            "id": "discharging",
+            "title": {
+              "en": "Discharging",
+              "es": "Descargando",
+              "de": "Entlädt",
+              "fr": "Décharge",
+              "nl": "Ontladen",
+              "sv": "Laddar ur"
+            }
+          },
+          {
+            "id": "idle",
+            "title": {
+              "en": "Idle",
+              "es": "Inactivo",
+              "de": "Leerlauf",
+              "fr": "Inactif",
+              "nl": "Inactief",
+              "sv": "Vilar"
+            }
+          },
+          {
+            "id": "unknown",
+            "title": {
+              "en": "Unknown",
+              "es": "Desconocido",
+              "de": "Unbekannt",
+              "fr": "Inconnu",
+              "nl": "Onbekend",
+              "sv": "Okänd"
+            }
+          }
+        ]
+      }
+    ]
+  }

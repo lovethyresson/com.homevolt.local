@@ -1,0 +1,39 @@
+{
+    "title": {
+    "en": "Battery status changed",
+    "es": "Estado de la batería cambiado",
+    "de": "Batteriestatus geändert",
+    "fr": "État de la batterie modifié",
+    "nl": "Batterijstatus gewijzigd",
+    "sv": "Batteristatus ändrad"
+    },
+    "hint": {
+    "en": "Triggers when the battery changes status, e.g. charging -> idle.",
+    "es": "Se activa cuando el estado de la batería cambia, por ejemplo, cargando -> inactivo.",
+    "de": "Wird ausgelöst, wenn sich der Batteriestatus ändert, z. B. lädt -> Leerlauf.",
+    "fr": "Se déclenche lorsque l'état de la batterie change, par exemple en charge -> inactif.",
+    "nl": "Activeert wanneer de batterijstatus verandert, bijvoorbeeld opladen -> inactief.",
+    "sv": "Utlöses när batteriets status ändras, t.ex. laddar -> vilar."
+    },
+    "tokens": [
+        {
+          "name": "battery_status",
+          "type": "string",
+          "title": { 
+            "en": "Status",
+            "sv": "Status",
+            "de": "Status",
+            "fr": "Statut",
+            "es": "Estado",
+            "nl": "Status"
+            } 
+        }   
+    ],
+    "args": [
+        {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=homevolt-battery"
+        }
+    ]
+}

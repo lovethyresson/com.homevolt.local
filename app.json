@@ -38,6 +38,168 @@
     "url": "https://github.com/lovethyresson/com.homevolt.local/issues"
   },
   "source": "https://github.com/lovethyresson/com.homevolt.local",
+  "settings": [
+    {
+      "id": "pollingInterval",
+      "type": "text",
+      "title": {
+        "en": "Polling Interval (seconds)",
+        "nl": "Polling-interval (seconden)",
+        "de": "Abfrageintervall (Sekunden)",
+        "fr": "Intervalle de sondage (secondes)",
+        "es": "Intervalo de sondeo (segundos)",
+        "sv": "Pollningsintervall (sekunder)"
+      },
+      "hint": {
+        "en": "Interval in seconds for fetching data (default: 5 seconds).",
+        "nl": "Interval in seconden voor het ophalen van gegevens (standaard: 5 seconden).",
+        "de": "Intervall in Sekunden zum Abrufen von Daten (Standard: 5 Sekunden).",
+        "fr": "Intervalle en secondes pour récupérer les données (par défaut : 5 secondes).",
+        "es": "Intervalo en segundos para obtener datos (predeterminado: 5 segundos).",
+        "sv": "Intervall i sekunder för hämtning av data (standard: 5 sekunder)."
+      },
+      "placeholder": "5",
+      "required": false
+    }
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "Battery status changed",
+          "es": "Estado de la batería cambiado",
+          "de": "Batteriestatus geändert",
+          "fr": "État de la batterie modifié",
+          "nl": "Batterijstatus gewijzigd",
+          "sv": "Batteristatus ändrad"
+        },
+        "hint": {
+          "en": "Triggers when the battery changes status, e.g. charging -> idle.",
+          "es": "Se activa cuando el estado de la batería cambia, por ejemplo, cargando -> inactivo.",
+          "de": "Wird ausgelöst, wenn sich der Batteriestatus ändert, z. B. lädt -> Leerlauf.",
+          "fr": "Se déclenche lorsque l'état de la batterie change, par exemple en charge -> inactif.",
+          "nl": "Activeert wanneer de batterijstatus verandert, bijvoorbeeld opladen -> inactief.",
+          "sv": "Utlöses när batteriets status ändras, t.ex. laddar -> vilar."
+        },
+        "tokens": [
+          {
+            "name": "battery_status",
+            "type": "string",
+            "title": {
+              "en": "Status",
+              "sv": "Status",
+              "de": "Status",
+              "fr": "Statut",
+              "es": "Estado",
+              "nl": "Status"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=homevolt-battery"
+          }
+        ],
+        "id": "battery_status_changed"
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "Status !{{is|isn't}}",
+          "es": "Estado !{{es|no es}}",
+          "de": "Status !{{ist|ist nicht}}",
+          "fr": "État !{{est|n'est pas}}",
+          "nl": "Toestand !{{is|is niet}}",
+          "sv": "Tillstånd !{{är|är inte}}"
+        },
+        "titleFormatted": {
+          "en": "Status !{{is|isn't}} [[state]]",
+          "es": "Estado !{{es|no es}} [[state]]",
+          "de": "Status !{{ist|ist nicht}} [[state]]",
+          "fr": "État !{{est|n'est pas}} [[state]]",
+          "nl": "Toestand !{{is|is niet}} [[state]]",
+          "sv": "Tillstånd !{{är|är inte}} [[state]]"
+        },
+        "hint": {
+          "en": "Checks if the current battery status equals a specific status.",
+          "es": "Comprueba si el estado actual de la batería es igual a un estado específico.",
+          "de": "Prüft, ob der aktuelle Batteriestatus einem bestimmten Status entspricht.",
+          "fr": "Vérifie si l'état actuel de la batterie correspond à un état spécifique.",
+          "nl": "Controleert of de huidige batterijstatus overeenkomt met een specifieke status.",
+          "sv": "Kontrollerar om batteriets nuvarande status motsvarar en specifik status."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=homevolt-battery"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": {
+              "en": "Status",
+              "es": "Estado",
+              "de": "Status",
+              "fr": "État",
+              "nl": "Status",
+              "sv": "Status"
+            },
+            "values": [
+              {
+                "id": "charging",
+                "title": {
+                  "en": "Charging",
+                  "es": "Cargando",
+                  "de": "Lädt",
+                  "fr": "En charge",
+                  "nl": "Opladen",
+                  "sv": "Laddar"
+                }
+              },
+              {
+                "id": "discharging",
+                "title": {
+                  "en": "Discharging",
+                  "es": "Descargando",
+                  "de": "Entlädt",
+                  "fr": "Décharge",
+                  "nl": "Ontladen",
+                  "sv": "Laddar ur"
+                }
+              },
+              {
+                "id": "idle",
+                "title": {
+                  "en": "Idle",
+                  "es": "Inactivo",
+                  "de": "Leerlauf",
+                  "fr": "Inactif",
+                  "nl": "Inactief",
+                  "sv": "Vilar"
+                }
+              },
+              {
+                "id": "unknown",
+                "title": {
+                  "en": "Unknown",
+                  "es": "Desconocido",
+                  "de": "Unbekannt",
+                  "fr": "Inconnu",
+                  "nl": "Onbekend",
+                  "sv": "Okänd"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "battery_status"
+      }
+    ]
+  },
   "drivers": [
     {
       "id": "homevolt-battery",
@@ -278,31 +440,6 @@
         {
           "id": "add_devices",
           "template": "add_devices"
-        }
-      ],
-      "settings": [
-        {
-          "id": "pollingInterval",
-          "type": "number",
-          "label": {
-            "en": "Polling Interval (seconds)",
-            "nl": "Polling-interval (seconden)",
-            "de": "Abfrageintervall (Sekunden)",
-            "fr": "Intervalle de sondage (secondes)",
-            "es": "Intervalo de sondeo (segundos)",
-            "sv": "Pollningsintervall (sekunder)"
-          },
-          "hint": {
-            "en": "Interval in seconds for fetching data (default: 5 seconds).",
-            "nl": "Interval in seconden voor het ophalen van gegevens (standaard: 5 seconden).",
-            "de": "Intervall in Sekunden zum Abrufen von Daten (Standard: 5 Sekunden).",
-            "fr": "Intervalle en secondes pour récupérer les données (par défaut : 5 secondes).",
-            "es": "Intervalo en segundos para obtener datos (predeterminado: 5 segundos).",
-            "sv": "Intervall i sekunder för hämtning av data (standard: 5 sekunder)."
-          },
-          "default": 5,
-          "min": 1,
-          "max": 60
         }
       ],
       "id": "homevolt-sensor"

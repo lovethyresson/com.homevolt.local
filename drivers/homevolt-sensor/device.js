@@ -44,25 +44,18 @@ class HomevoltSensorDevice extends Device {
   }
 
   async startPolling() {
-    this.pollingInterval = (this.getSetting('pollingInterval') || 5) * 1000;
-
     if (this.pollingTimer) {
       clearInterval(this.pollingTimer);
     }
 
     this.pollingTimer = setInterval(async () => {
       await this.fetchData();
-    }, this.pollingInterval);
+    }, this.homey.app.pollingInterval * 1000);
   }
-
+  
   async fetchData() {
     try {
-      const response = await fetch(`http://${this.ip}/ems.json`);
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await this.homey.app.getStatus({ address: this.ip });
       const sensorData = data.sensors.find(sensor => sensor.type === this.type);
 
       if (sensorData) {

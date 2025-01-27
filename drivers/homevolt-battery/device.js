@@ -45,6 +45,18 @@ class HomevoltBatteryDevice extends Device {
     // Get initial values
     this.fetchData().catch(this.error);
 
+    // Register capability listener for battery status
+    const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
+    cardConditionBatteryStatus.registerRunListener(async (args, state) => {
+      const data = await fetchData();
+      //this.log(args);
+      this.log(`Data: ${data}`);
+      const batteryStatus = data.ems[0]?.op_state_str;
+      //this.log(`Checking battery status: ${args.battery_status} vs ${batteryStatus}`);
+      return batteryStatus === args.battery_status;
+      }
+    ); 
+
     await this.setAvailable();
     this.startPolling();
   }
@@ -53,15 +65,14 @@ class HomevoltBatteryDevice extends Device {
    * Poll the device at the configured interval
    */
   async startPolling() {
-    this.log(`Starting polling every ${this.pollingInterval / 1000} seconds`);
-
     if (this.pollingTimer) {
       clearInterval(this.pollingTimer);
     }
 
     this.pollingTimer = setInterval(async () => {
       await this.fetchData();
-    }, this.pollingInterval);
+    }, this.homey.app.pollingInterval * 1000);
+    
   }
 
 /**
@@ -69,13 +80,9 @@ class HomevoltBatteryDevice extends Device {
  */
 async fetchData() {
   try {
-    const response = await fetch(`http://${this.ip}/ems.json`);
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await this.homey.app.getStatus({ address: this.ip });
     this.updateCapabilities(data);
+    //return data;
   } catch (error) {
     this.log('Error fetching data:', error.message);
     await this.setUnavailable('Error fetching data');
@@ -133,11 +140,10 @@ updateCapabilities(data) {
     } else {
       this.setCapabilityValue('battery_status', this.homey.__("battery_status_unknown")).catch(this.error);
     }
-  } 
+  }
 
   this.setAvailable().catch(this.error); // Ensure the device remains available after updates
 }
-
 
   /**
    * Called when device settings are updated
