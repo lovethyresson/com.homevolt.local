@@ -1,10 +1,12 @@
 'use strict';
 
 const Homey = require('homey');
+const fetch = require('node-fetch');
 
 module.exports = class HomevoltApp extends Homey.App {
 
   __statusPromises = {};
+  __paramPromises = {};
 
   async getStatus({ address }) {
     if (!this.__statusPromises[address]) {
@@ -28,6 +30,19 @@ module.exports = class HomevoltApp extends Homey.App {
 
     return this.__statusPromises[address];
   }
+
+  async getSystem({ address }) {
+    if (!this.__paramPromises[address]) {
+      this.__paramPromises[address] = Promise.resolve().then(async () => {
+        const res = await fetch(`http://${address}/status.json`);
+        const data = await res.json();
+        return data;
+      });
+    }
+  
+    return this.__paramPromises[address]; 
+  }
+
 
   /**
    * onInit is called when the app is initialized.
