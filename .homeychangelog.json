@@ -40,5 +40,8 @@
   },
   "0.6.0": {
     "en": "Release Candidate (POSSIBLY BREAKING CHANGE): Added battery status inc. When/And flow cards. Reworked fetching logic. Polling interval setting now moved to app settings. "
+  },
+  "0.6.1": {
+    "en": "Tweaks to icons. Fix Homey Pro 2016-2019. Add read-only settings to battery."
   }
 }
