@@ -21,7 +21,8 @@
         "fr": "Énergie Importée",
         "es": "Energía Importada",
         "sv": "Importerad Energi"
-      }
+      },
+      "decimals": 3
     },
     "meter_power.exported": {
       "title": {
@@ -31,7 +32,8 @@
         "fr": "Énergie Exportée",
         "es": "Energía Exportada",
         "sv": "Exporterad Energi"
-      }
+      },
+      "decimals": 3
     },
     "measure_power.currentL1": {
       "title": {

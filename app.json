@@ -203,7 +203,8 @@
             "fr": "Énergie Importée",
             "es": "Energía Importada",
             "sv": "Importerad Energi"
-          }
+          },
+          "decimals": 3
         },
         "measure_power.target_power": {
           "title": {
@@ -223,7 +224,8 @@
             "fr": "Énergie Exportée",
             "es": "Energía Exportada",
             "sv": "Exporterad Energi"
-          }
+          },
+          "decimals": 3
         },
         "meter_power.available": {
           "title": {
@@ -233,7 +235,8 @@
             "fr": "Énergie disponible",
             "es": "Energía disponible",
             "sv": "Tillgänglig energi"
-          }
+          },
+          "decimals": 3
         }
       },
       "energy": {
@@ -372,7 +375,8 @@
             "fr": "Énergie Importée",
             "es": "Energía Importada",
             "sv": "Importerad Energi"
-          }
+          },
+          "decimals": 3
         },
         "meter_power.exported": {
           "title": {
@@ -382,7 +386,8 @@
             "fr": "Énergie Exportée",
             "es": "Energía Exportada",
             "sv": "Exporterad Energi"
-          }
+          },
+          "decimals": 3
         },
         "measure_power.currentL1": {
           "title": {
