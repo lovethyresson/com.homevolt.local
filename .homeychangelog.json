@@ -46,5 +46,8 @@
   },
   "0.6.2": {
     "en": "Updated icons. Release Candidate."
+  },
+  "0.6.3": {
+    "en": "Add translations for app settings."
   }
 }
