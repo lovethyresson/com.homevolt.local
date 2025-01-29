@@ -190,25 +190,29 @@ updateCapabilities(data) {
   }
 
   async initSettings() {
-    // Example: Dynamically set the settings from your source JSON
-    const data = await this.homey.app.getStatus({ address: this.ip });
-    const system = await this.homey.app.getSystem({ address: this.ip });
-
-    //this.log('Init dynamic device settings with params:', params);
-
-    const settings = {
-      wifi_ssid: system.wifi_status?.ssid || "No SSID found", 
-      wifi_ip: system.wifi_status?.ip || "Unknown",          
-      battery_packs: `${data.ems?.[0]?.bms_info?.length || 0}`,
-      rated_capacity: `${data.ems?.[0]?.ems_info?.rated_capacity / 1000 || 0} kWh`,
-      available_capacity: `${data.ems?.[0]?.ems_data?.avail_cap / 1000 || 0} kWh`,
-      rated_power: `${data.ems?.[0]?.ems_info?.rated_power / 1000 || 0} kW`
-    };
-
-    this.log('Init static device settings with:', settings);
-
-    // Apply settings to the Homey app
-    this.setSettings(settings).catch(this.error);
+    try {
+      // Fetch data safely
+      const data = await this.homey.app.getStatus({ address: this.ip }) || {};
+      const system = await this.homey.app.getSystem({ address: this.ip }) || {};
+  
+      // Safeguard against missing properties
+      const settings = {
+        wifi_ssid: system?.wifi_status?.ssid || "No SSID found", 
+        wifi_ip: system?.wifi_status?.ip || "Unknown",          
+        battery_packs: `${data?.ems?.[0]?.bms_info?.length || 0}`,
+        rated_capacity: `${(data?.ems?.[0]?.ems_info?.rated_capacity || 0) / 1000} kWh`,
+        available_capacity: `${(data?.ems?.[0]?.ems_data?.avail_cap || 0) / 1000} kWh`,
+        rated_power: `${(data?.ems?.[0]?.ems_info?.rated_power || 0) / 1000} kW`
+      };
+  
+      this.log('Init device settings with:', settings);
+  
+      // Apply settings safely
+      await this.setSettings(settings).catch(err => this.error("Error applying settings:", err));
+  
+    } catch (error) {
+      this.error("Error initializing device settings:", error);
+    }
   }
 }
 
