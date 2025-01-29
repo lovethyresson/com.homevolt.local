@@ -2,5 +2,7 @@
   "battery_status_charging": "En charge",
   "battery_status_discharging": "Décharge",
   "battery_status_idle": "Inactif",
-  "battery_status_unknown": "Inconnu"
+  "battery_status_unknown": "Inconnu",
+  "app_settings_refresh_label": "Intervalle de rafraîchissement (secondes)",
+  "app_settings_success": "Intervalle de rafraîchissement mis à jour avec succès !"
 }

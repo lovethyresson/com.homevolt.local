@@ -2,5 +2,7 @@
     "battery_status_charging": "Charging",
     "battery_status_discharging": "Discharging",
     "battery_status_idle": "Idle",
-    "battery_status_unknown": "Unknown"
+    "battery_status_unknown": "Unknown",
+    "app_settings_refresh_label": "Refresh Interval (seconds)",
+    "app_settings_success": "Refresh interval updated successfully!"
 }

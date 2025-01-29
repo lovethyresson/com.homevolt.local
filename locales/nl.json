@@ -2,5 +2,7 @@
   "battery_status_charging": "Opladen",
   "battery_status_discharging": "Ontladen",
   "battery_status_idle": "Inactief",
-  "battery_status_unknown": "Onbekend"
+  "battery_status_unknown": "Onbekend",
+  "app_settings_refresh_label": "Vernieuwingsinterval (seconden)",
+  "app_settings_success": "Vernieuwingsinterval succesvol bijgewerkt!"
 }

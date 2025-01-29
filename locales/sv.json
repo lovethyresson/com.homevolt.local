@@ -1,6 +1,8 @@
 {
   "battery_status_charging": "Laddar",
   "battery_status_discharging": "Laddar ur",
-  "battery_status_idle": "Vilar",
-  "battery_status_unknown": "Okänd"
+  "battery_status_idle": "Viloläge",
+  "battery_status_unknown": "Okänd",
+  "app_settings_refresh_label": "Uppdateringsintervall (sekunder)",
+  "app_settings_success": "Uppdateringsintervall uppdaterat!"
 }

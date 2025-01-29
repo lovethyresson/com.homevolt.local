@@ -22,7 +22,7 @@
       <legend class="homey-form-legend">App Settings</legend>
 
       <div class="homey-form-group">
-        <label class="homey-form-label" for="pollingInterval">Polling Interval (seconds)</label>
+        <label class="homey-form-label" for="pollingInterval" id="refreshLabel"></label>
         <input class="homey-form-input" id="pollingInterval" type="text" value="" />
       </div>
     </fieldset>
@@ -30,29 +30,33 @@
     <button id="save" class="homey-button-primary-full">Save changes</button>
 
     <script type="text/javascript">
-        // a method named 'onHomeyReady' must be present in your code
-        function onHomeyReady(Homey) {
-          // Tell Homey we're ready to be displayed
-          Homey.ready();
-      
-          var pollingIntervalElement = document.getElementById("pollingInterval");
-          var saveElement = document.getElementById("save");
-      
-          // Get the current pollingInterval setting
-          Homey.get("pollingInterval", function (err, pollingInterval) {
+      // a method named 'onHomeyReady' must be present in your code
+      function onHomeyReady(Homey) {
+        // Tell Homey we're ready to be displayed
+        Homey.ready();
+    
+        var pollingIntervalElement = document.getElementById("pollingInterval");
+        var saveElement = document.getElementById("save");
+        var refreshLabelElement = document.getElementById("refreshLabel");
+    
+        // Get the current pollingInterval setting
+        Homey.get("pollingInterval", function (err, pollingInterval) {
+          if (err) return Homey.alert(err);
+          pollingIntervalElement.value = pollingInterval; // Correctly set the input value
+        });
+    
+        // Set translation for label
+        refreshLabelElement.textContent = Homey.__("app_settings_refresh_label") || "Translation Missing!";
+    
+        // Save changes when the Save button is clicked
+        saveElement.addEventListener("click", function (e) {
+          const newPollingInterval = pollingIntervalElement.value;
+          Homey.set("pollingInterval", newPollingInterval, function (err) {
             if (err) return Homey.alert(err);
-            pollingIntervalElement.value = pollingInterval; // Correctly set the input value
+            Homey.alert(Homey.__("app_settings_success"));
           });
-      
-          // Save changes when the Save button is clicked
-          saveElement.addEventListener("click", function (e) {
-            const newPollingInterval = pollingIntervalElement.value;
-            Homey.set("pollingInterval", newPollingInterval, function (err) {
-              if (err) return Homey.alert(err);
-              Homey.alert("Polling interval saved successfully!");
-            });
-          });
-        }
-      </script>
+        });
+      }
+    </script>
   </body>
 </html>
