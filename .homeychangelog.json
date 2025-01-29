@@ -49,5 +49,8 @@
   },
   "0.6.3": {
     "en": "Add translations for app settings."
+  },
+  "0.6.4": {
+    "en": "Added 3rd decimal for energy import/export. Increased fault tolerance in fetch."
   }
 }
