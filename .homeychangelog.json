@@ -52,5 +52,8 @@
   },
   "0.6.4": {
     "en": "Added 3rd decimal for energy import/export. Increased fault tolerance in fetch."
+  },
+  "0.6.5": {
+    "en": "Improved error handling for failing data requests."
   }
 }
