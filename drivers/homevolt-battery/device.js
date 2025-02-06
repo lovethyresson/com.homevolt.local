@@ -58,11 +58,10 @@ class HomevoltBatteryDevice extends Device {
         const batteryStatus = data.ems[0]?.op_state_str;
     
         // Log the values for debugging
-        this.log(`Args state (selected by user): ${args.state}`);
-        this.log(`Device battery status (from data): ${batteryStatus}`);
-    
+        this.log(`Condition card executed. Card: ${args.battery_status}, Battery: ${batteryStatus}`);
+            
         // Compare user-selected state with actual battery status
-        return batteryStatus === args.state;
+        return batteryStatus === args.battery_status;
       } catch (error) {
         this.error('Error in battery_status condition:', error.message);
         return false; // Fail safely
