@@ -273,82 +273,110 @@
       ],
       "settings": [
         {
-          "id": "wifi_ssid",
-          "type": "label",
+          "id": "wifi_settings",
+          "type": "group",
           "label": {
-            "en": "Wi-Fi SSID",
-            "sv": "Wi-Fi-namn",
-            "de": "Wi-Fi-SSID",
-            "fr": "SSID Wi-Fi",
-            "es": "SSID de Wi-Fi",
-            "nl": "Wi-Fi SSID"
+            "en": "Wi-Fi Settings",
+            "sv": "Wi-Fi-inställningar",
+            "de": "Wi-Fi-Einstellungen",
+            "fr": "Paramètres Wi-Fi",
+            "es": "Configuración de Wi-Fi",
+            "nl": "Wi-Fi-instellingen"
           },
-          "value": "Not available"
+          "children": [
+            {
+              "id": "wifi_ssid",
+              "type": "label",
+              "label": {
+                "en": "SSID",
+                "sv": "SSID",
+                "de": "SSID",
+                "fr": "SSID",
+                "es": "SSID",
+                "nl": "SSID"
+              },
+              "value": "Not available"
+            },
+            {
+              "id": "wifi_ip",
+              "type": "label",
+              "label": {
+                "en": "IP Address",
+                "sv": "IP-adress",
+                "de": "IP-Adresse",
+                "fr": "Adresse IP",
+                "es": "Dirección IP",
+                "nl": "IP-adres"
+              },
+              "value": "Unknown"
+            }
+          ]
         },
         {
-          "id": "wifi_ip",
-          "type": "label",
+          "id": "battery_settings",
+          "type": "group",
           "label": {
-            "en": "Wi-Fi IP Address",
-            "sv": "Wi-Fi IP-adress",
-            "de": "Wi-Fi-IP-Adresse",
-            "fr": "Adresse IP Wi-Fi",
-            "es": "Dirección IP de Wi-Fi",
-            "nl": "Wi-Fi-IP-adres"
+            "en": "Battery Specifications",
+            "sv": "Batterispecifikationer",
+            "de": "Batteriespezifikationen",
+            "fr": "Spécifications de la batterie",
+            "es": "Especificaciones de la batería",
+            "nl": "Batterijspecificaties"
           },
-          "value": "Unknown"
-        },
-        {
-          "id": "battery_packs",
-          "type": "label",
-          "label": {
-            "en": "Number of Battery Packs",
-            "sv": "Antal batteripaket",
-            "de": "Anzahl der Batteriepakete",
-            "fr": "Nombre de batteries",
-            "es": "Número de paquetes de batería",
-            "nl": "Aantal batterijpakketten"
-          },
-          "value": "0"
-        },
-        {
-          "id": "rated_capacity",
-          "type": "label",
-          "label": {
-            "en": "Rated Capacity",
-            "sv": "Kapacitet",
-            "de": "Nennkapazität",
-            "fr": "Capacité nominale",
-            "es": "Capacidad nominal",
-            "nl": "Nominale capaciteit"
-          },
-          "value": "0 kWh"
-        },
-        {
-          "id": "available_capacity",
-          "type": "label",
-          "label": {
-            "en": "Available Capacity",
-            "sv": "Tillgänglig kapacitet",
-            "de": "Verfügbare Kapazität",
-            "fr": "Capacité disponible",
-            "es": "Capacidad disponible",
-            "nl": "Beschikbare capaciteit"
-          },
-          "value": "0 kWh"
-        },
-        {
-          "id": "rated_power",
-          "type": "label",
-          "label": {
-            "en": "Rated Power",
-            "sv": "Effekt",
-            "de": "Nennleistung",
-            "fr": "Puissance nominale",
-            "es": "Potencia nominal",
-            "nl": "Nominaal vermogen"
-          },
-          "value": "0 kW"
+          "children": [
+            {
+              "id": "battery_packs",
+              "type": "label",
+              "label": {
+                "en": "Number of Battery Packs",
+                "sv": "Antal batteripaket",
+                "de": "Anzahl der Batteriepakete",
+                "fr": "Nombre de batteries",
+                "es": "Número de paquetes de batería",
+                "nl": "Aantal batterijpakketten"
+              },
+              "value": "0"
+            },
+            {
+              "id": "rated_capacity",
+              "type": "label",
+              "label": {
+                "en": "Rated Capacity",
+                "sv": "Kapacitet",
+                "de": "Nennkapazität",
+                "fr": "Capacité nominale",
+                "es": "Capacidad nominal",
+                "nl": "Nominale capaciteit"
+              },
+              "value": "0 kWh"
+            },
+            {
+              "id": "available_capacity",
+              "type": "label",
+              "label": {
+                "en": "Available Capacity",
+                "sv": "Tillgänglig kapacitet",
+                "de": "Verfügbare Kapazität",
+                "fr": "Capacité disponible",
+                "es": "Capacidad disponible",
+                "nl": "Beschikbare capaciteit"
+              },
+              "value": "0 kWh"
+            },
+            {
+              "id": "rated_power",
+              "type": "label",
+              "label": {
+                "en": "Rated Power",
+                "sv": "Effekt",
+                "de": "Nennleistung",
+                "fr": "Puissance nominale",
+                "es": "Potencia nominal",
+                "nl": "Nominaal vermogen"
+              },
+              "value": "0 kW"
+            }
+          ]
         }
       ]
     },
