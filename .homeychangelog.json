@@ -58,5 +58,8 @@
   },
   "1.0.0": {
     "en": "First official release."
+  },
+  "1.0.1": {
+    "en": "Fix for non-working AND card. Make battery settings prettier."
   }
 }
