@@ -61,5 +61,8 @@
   },
   "1.0.1": {
     "en": "Fix for non-working AND card. Make battery settings prettier."
+  },
+  "1.1.0": {
+    "en": "Changed behavior of charge/discharge to align with homey guidelines and work better in homey energy. Power & Target Power values are now negated (-power, -targetPower). No change to discharge/charge states or anything else."
   }
 }
