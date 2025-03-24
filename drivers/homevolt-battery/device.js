@@ -97,7 +97,53 @@ class HomevoltBatteryDevice extends Device {
     await this.setAvailable();
     this.startPolling();
 
-  }
+    // Register flow action cards
+
+    // Flow action for clearing the schedule
+    this.homey.flow.getActionCard('clear_schedule')
+      .registerRunListener(async () => {
+        try {
+          await this.sendBatteryCommand('ems_schedule_clear');
+          this.log('Schedule cleared successfully');
+        } catch (err) {
+          this.error('Failed to clear schedule:', err);
+        }
+      });
+
+    // Flow action card for charging the battery
+    this.homey.flow.getActionCard('charge_battery')
+      .registerRunListener(async (args) => {
+        const { start_date, end_date, start_time, end_time } = args;
+        const from = `${start_date}T${start_time}`;
+        const to = `${end_date}T${end_time}`;
+
+        const command = `ems_schedule_set 1 --from=${from} --to=${to}`;
+
+        try {
+          await this.sendBatteryCommand(command);
+          this.log(`Schedule set for charging: ${command}`);
+        } catch (err) {
+          this.error('Failed to set charge schedule:', err);
+        }
+      });
+
+      // Flow action card for discharging the battery
+      this.homey.flow.getActionCard('discharge_battery')
+        .registerRunListener(async (args) => {
+          const { start_date, end_date, start_time, end_time } = args;
+          const from = `${start_date}T${start_time}`;
+          const to = `${end_date}T${end_time}`;
+
+          const command = `ems_schedule_set 2 --from=${from} --to=${to}`;
+
+          try {
+            await this.sendBatteryCommand(command);
+            this.log(`Schedule set for discharging: ${command}`);
+          } catch (err) {
+            this.error('Failed to set discharge schedule:', err);
+          }
+        });
+      }
 
   /**
    * Poll the device at the configured interval
