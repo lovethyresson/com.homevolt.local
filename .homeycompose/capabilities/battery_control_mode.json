@@ -1,0 +1,38 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Battery Control Mode",
+    "de": "Batteriesteuerungsmodus",
+    "es": "Modo de control de batería",
+    "fr": "Mode de contrôle de la batterie",
+    "nl": "Batterijbedieningsmodus",
+    "sv": "Batteristyrning"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "values": [
+    {
+      "id": "local",
+      "title": {
+        "en": "Local",
+        "de": "Lokal",
+        "es": "Local",
+        "fr": "Local",
+        "nl": "Lokaal",
+        "sv": "Lokal"
+      }
+    },
+    {
+      "id": "remote",
+      "title": {
+        "en": "Remote",
+        "de": "Fernsteuerung",
+        "es": "Remoto",
+        "fr": "Distant",
+        "nl": "Op afstand",
+        "sv": "Fjärr"
+      }
+    }
+  ]
+}

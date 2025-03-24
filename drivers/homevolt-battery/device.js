@@ -1,5 +1,6 @@
 const { Device } = require('homey');
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 class HomevoltBatteryDevice extends Device {
 
@@ -42,10 +43,27 @@ class HomevoltBatteryDevice extends Device {
     this.log(`Initializing battery device: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
 
     // Get initial values
-    this.fetchData().catch(this.error);
+    await this.fetchData().catch(this.error);
+    await this.syncBatteryControlMode().catch(this.error);
 
     // Setup settings
-    this.initSettings();
+    await this.initSettings();
+
+    this.registerCapabilityListener('battery_control_mode', async (value) => {
+      this.log('battery_control_mode changed to:', value);
+      const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
+      try {
+        const resultSet = await this.sendBatteryCommand(command);
+        this.log(`Battery response (param_set): ${resultSet}`);
+    
+        const resultStore = await this.sendBatteryCommand('param_store');
+        this.log(`Battery response (param_store): ${resultStore}`);
+    
+      } catch (err) {
+        this.error('Failed to send battery control mode command:', err);
+        throw new Error('Battery control mode command failed');
+      }
+    });
 
     // Register capability listener for battery status
     const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
@@ -126,7 +144,7 @@ updateCapabilities(data) {
 
   // Parse data into useful data points and update capabilities
 
-  const batteryImporteKWh = data.ems[0]?.ems_data?.energy_consumed / 1000;     // Accumulated imported energy, scale to kWh
+  const batteryImportedKWh = data.ems[0]?.ems_data?.energy_consumed / 1000;     // Accumulated imported energy, scale to kWh
   const batteryExportedKWh = data.ems[0]?.ems_data?.energy_produced / 1000;    // Accumulated exported energy, scale to kWh
   const batteryChargePower = -data.ems[0]?.ems_data?.power;                     // Current charge power
   const batteryTargetPower = -data.ems[0]?.ems_control?.pwr_ref;                // Target power
@@ -145,8 +163,8 @@ updateCapabilities(data) {
   if (batteryChargePower !== undefined && batteryChargePower !== null) {
       this.setCapabilityValue('measure_power', batteryChargePower).catch(this.error);
   }
-  if (batteryImporteKWh !== undefined && batteryImporteKWh !== null) {
-      this.setCapabilityValue('meter_power.imported', batteryImporteKWh).catch(this.error);
+  if (batteryImportedKWh !== undefined && batteryImportedKWh !== null) {
+      this.setCapabilityValue('meter_power.imported', batteryImportedKWh).catch(this.error);
   }
   if (batteryExportedKWh !== undefined && batteryExportedKWh !== null) {
       this.setCapabilityValue('meter_power.exported', batteryExportedKWh).catch(this.error);
@@ -212,6 +230,50 @@ updateCapabilities(data) {
     } catch (error) {
       this.error("Error initializing device settings:", error);
     }
+  }
+
+  async syncBatteryControlMode() {
+    const formData = new URLSearchParams();
+    formData.append('cmd', 'param_dump');
+
+    const res = await fetch(`http://${this.ip}/console.json`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    const resultText = await res.text();
+    const isLocal = resultText.includes('settings_local true');
+
+    const mode = isLocal ? 'local' : 'remote';
+    await this.setCapabilityValue('battery_control_mode', mode).catch(this.error);
+    this.log(`Synced battery_control_mode to: ${mode}`);
+  }
+
+  async sendBatteryCommand(cmd) {
+    const form = new FormData();
+    form.append('cmd', cmd);
+  
+    const res = await fetch(`http://${this.ip}/console.json`, {
+      method: 'POST',
+      body: form,
+      headers: form.getHeaders(), // important!
+    });
+  
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
+    }
+  
+    const result = await res.text();
+    this.log('Battery raw response:', result);
+    return result;
   }
 }
 
