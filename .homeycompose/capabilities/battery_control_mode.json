@@ -13,25 +13,25 @@
   "uiComponent": "picker",
   "values": [
     {
-      "id": "local",
+      "id": "manual",
       "title": {
-        "en": "Local",
-        "de": "Lokal",
-        "es": "Local",
-        "fr": "Local",
-        "nl": "Lokaal",
-        "sv": "Lokal"
+        "en": "Manual",
+        "de": "Manuell",
+        "es": "Manual",
+        "fr": "Manuel",
+        "nl": "Handmatig",
+        "sv": "Manuell"
       }
     },
     {
-      "id": "remote",
+      "id": "auto",
       "title": {
-        "en": "Remote",
-        "de": "Fernsteuerung",
-        "es": "Remoto",
-        "fr": "Distant",
-        "nl": "Op afstand",
-        "sv": "Fjärr"
+        "en": "Auto",
+        "de": "Automatisch",
+        "es": "Automático",
+        "fr": "Automatique",
+        "nl": "Automatisch",
+        "sv": "Automatisk"
       }
     }
   ]

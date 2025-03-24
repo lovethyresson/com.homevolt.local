@@ -54,10 +54,10 @@ class HomevoltBatteryDevice extends Device {
       const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
       try {
         const resultSet = await this.sendBatteryCommand(command);
-        this.log(`Battery response (param_set): ${resultSet}`);
+        //this.log(`Battery response (param_set): ${resultSet}`);
     
         const resultStore = await this.sendBatteryCommand('param_store');
-        this.log(`Battery response (param_store): ${resultStore}`);
+        //this.log(`Battery response (param_store): ${resultStore}`);
     
       } catch (err) {
         this.error('Failed to send battery control mode command:', err);
@@ -272,7 +272,7 @@ updateCapabilities(data) {
     }
   
     const result = await res.text();
-    this.log('Battery raw response:', result);
+    //this.log('Battery raw response:', result);
     return result;
   }
 }
