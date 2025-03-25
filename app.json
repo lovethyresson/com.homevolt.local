@@ -177,6 +177,35 @@
     ],
     "actions": [
       {
+        "id": "clear_schedule",
+        "scope": "device",
+        "title": {
+          "en": "Clear schedule",
+          "de": "Zeitplan löschen",
+          "es": "Borrar programación",
+          "fr": "Effacer le planning",
+          "nl": "Schema wissen",
+          "sv": "Rensa schema"
+        },
+        "hint": {
+          "en": "Clear all local schedules",
+          "de": "Alle lokalen Zeitpläne löschen",
+          "es": "Borrar todas las programaciones locales",
+          "fr": "Effacer tous les plannings locaux",
+          "nl": "Verwijder alle lokale schema's",
+          "sv": "Rensa alla lokala scheman"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=homevolt-battery"
+          }
+        ]
+      },
+      {
+        "id": "charge_battery",
+        "scope": "device",
         "title": {
           "en": "Charge",
           "de": "Laden",
@@ -203,6 +232,11 @@
         },
         "args": [
           {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=homevolt-battery"
+          },
+          {
             "type": "number",
             "name": "power",
             "title": {
@@ -280,29 +314,11 @@
               "en": "13:37"
             }
           }
-        ],
-        "id": "charge_battery"
+        ]
       },
       {
-        "title": {
-          "en": "Clear schedule",
-          "de": "Zeitplan löschen",
-          "es": "Borrar programación",
-          "fr": "Effacer le planning",
-          "nl": "Schema wissen",
-          "sv": "Rensa schema"
-        },
-        "hint": {
-          "en": "Clear all local schedules",
-          "de": "Alle lokalen Zeitpläne löschen",
-          "es": "Borrar todas las programaciones locales",
-          "fr": "Effacer tous les plannings locaux",
-          "nl": "Verwijder alle lokale schema's",
-          "sv": "Rensa alla lokala scheman"
-        },
-        "id": "clear_schedule"
-      },
-      {
+        "id": "discharge_battery",
+        "scope": "device",
         "title": {
           "en": "Discharge",
           "de": "Entladen",
@@ -329,6 +345,11 @@
         },
         "args": [
           {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=homevolt-battery"
+          },
+          {
             "type": "number",
             "name": "power",
             "title": {
@@ -406,8 +427,7 @@
               "en": "13:37"
             }
           }
-        ],
-        "id": "discharge_battery"
+        ]
       }
     ]
   },
