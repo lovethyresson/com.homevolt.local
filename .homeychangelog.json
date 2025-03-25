@@ -64,5 +64,8 @@
   },
   "1.1.0": {
     "en": "Changed behavior of charge/discharge to align with homey guidelines and work better in homey energy. Power & Target Power values are now negated (-power, -targetPower). No change to discharge/charge states or anything else."
+  },
+  "1.2.0": {
+    "en": "Added UI picker for Battery control mode. Added flow cards for battery control mode, and setting/clearing schedules."
   }
 }
