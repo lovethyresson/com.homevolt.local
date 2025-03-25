@@ -4,5 +4,7 @@
     "battery_status_idle": "Idle",
     "battery_status_unknown": "Unknown",
     "app_settings_refresh_label": "Refresh Interval (seconds)",
-    "app_settings_success": "Refresh interval updated successfully!"
+    "app_settings_success": "Refresh interval updated successfully!",
+    "battery_control_mode.local": "Local",
+    "battery_control_mode.remote": "Remote"
 }

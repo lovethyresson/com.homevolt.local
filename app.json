@@ -204,6 +204,61 @@
         ]
       },
       {
+        "id": "set_battery_control_mode",
+        "scope": "device",
+        "title": {
+          "en": "Set battery control mode",
+          "de": "Batteriesteuerungsmodus setzen",
+          "es": "Establecer modo de control de batería",
+          "fr": "Définir le mode de contrôle de la batterie",
+          "nl": "Stel batterijbedieningsmodus in",
+          "sv": "Sätt batteristyrning"
+        },
+        "titleFormatted": {
+          "en": "Set battery control mode to [[mode]]",
+          "de": "Setze Batteriesteuerungsmodus auf [[mode]]",
+          "es": "Establecer modo de control de batería en [[mode]]",
+          "fr": "Définir le mode de contrôle de la batterie sur [[mode]]",
+          "nl": "Stel batterijbedieningsmodus in op [[mode]]",
+          "sv": "Sätt batteristyrning till [[mode]]"
+        },
+        "hint": {
+          "en": "Set battery to local or remote control mode",
+          "de": "Batterie auf lokalen oder Fernsteuerungsmodus setzen",
+          "es": "Establecer batería en modo local o remoto",
+          "fr": "Définir le mode de contrôle local ou distant",
+          "nl": "Stel de batterij in op lokaal of op afstand",
+          "sv": "Ställ in batteriet till lokalt eller fjärrläge"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=homevolt-battery"
+          },
+          {
+            "name": "mode",
+            "type": "autocomplete",
+            "title": {
+              "en": "Battery Control Mode",
+              "de": "Batteriesteuerungsmodus",
+              "es": "Modo de control de batería",
+              "fr": "Mode de contrôle de la batterie",
+              "nl": "Batterijbedieningsmodus",
+              "sv": "Batteristyrning"
+            },
+            "placeholder": {
+              "en": "local or remote",
+              "de": "lokal oder Fern",
+              "es": "local o remoto",
+              "fr": "local ou distant",
+              "nl": "lokaal of op afstand",
+              "sv": "lokal eller fjärr"
+            }
+          }
+        ]
+      },
+      {
         "id": "charge_battery",
         "scope": "device",
         "title": {
@@ -781,25 +836,25 @@
       "uiComponent": "picker",
       "values": [
         {
-          "id": "manual",
+          "id": "local",
           "title": {
-            "en": "Manual",
-            "de": "Manuell",
-            "es": "Manual",
-            "fr": "Manuel",
-            "nl": "Handmatig",
-            "sv": "Manuell"
+            "en": "Local",
+            "de": "Lokal",
+            "es": "Local",
+            "fr": "Local",
+            "nl": "Lokaal",
+            "sv": "Lokal"
           }
         },
         {
-          "id": "auto",
+          "id": "remote",
           "title": {
-            "en": "Auto",
-            "de": "Automatisch",
-            "es": "Automático",
-            "fr": "Automatique",
-            "nl": "Automatisch",
-            "sv": "Automatisk"
+            "en": "Remote",
+            "de": "Fernsteuerung",
+            "es": "Remoto",
+            "fr": "Distant",
+            "nl": "Op afstand",
+            "sv": "Fjärr"
           }
         }
       ]

@@ -4,5 +4,7 @@
   "battery_status_idle": "Inactif",
   "battery_status_unknown": "Inconnu",
   "app_settings_refresh_label": "Intervalle de rafraîchissement (secondes)",
-  "app_settings_success": "Intervalle de rafraîchissement mis à jour avec succès !"
+  "app_settings_success": "Intervalle de rafraîchissement mis à jour avec succès !",
+  "battery_control_mode.local": "Local",
+  "battery_control_mode.remote": "Distant"
 }

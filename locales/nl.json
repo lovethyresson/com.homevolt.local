@@ -4,5 +4,7 @@
   "battery_status_idle": "Inactief",
   "battery_status_unknown": "Onbekend",
   "app_settings_refresh_label": "Vernieuwingsinterval (seconden)",
-  "app_settings_success": "Vernieuwingsinterval succesvol bijgewerkt!"
+  "app_settings_success": "Vernieuwingsinterval succesvol bijgewerkt!",
+  "battery_control_mode.local": "Lokaal",
+  "battery_control_mode.remote": "Op afstand"
 }

@@ -143,6 +143,28 @@ class HomevoltBatteryDevice extends Device {
             this.error('Failed to set discharge schedule:', err);
           }
         });
+
+        // Flow action card for setting battery control mode
+        this.homey.flow.getActionCard('set_battery_control_mode')
+          .registerRunListener(async (args) => {
+            const value = args.mode;
+            this.log('Flow card: setting battery_control_mode to', value);
+
+            const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
+            try {
+              await this.sendBatteryCommand(command);
+              await this.sendBatteryCommand('param_store');
+              await this.setCapabilityValue('battery_control_mode', value);
+              return true;
+            } catch (err) {
+              this.error('Failed to set battery control mode from flow:', err);
+              throw new Error('Could not set battery control mode');
+            }
+          })
+          .registerArgumentAutocompleteListener('mode', async (query) => {
+            const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
+            return options.map(m => ({ name: m }));
+          });
       }
 
   /**

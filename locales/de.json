@@ -4,5 +4,6 @@
   "battery_status_idle": "Leerlauf",
   "battery_status_unknown": "Unbekannt",
   "app_settings_refresh_label": "Aktualisierungsintervall (Sekunden)",
-  "app_settings_success": "Aktualisierungsintervall erfolgreich aktualisiert!"
+  "battery_control_mode.local": "Lokal",
+  "battery_control_mode.remote": "Fernsteuerung"
 }
