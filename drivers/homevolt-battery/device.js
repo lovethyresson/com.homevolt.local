@@ -103,7 +103,7 @@ class HomevoltBatteryDevice extends Device {
     this.homey.flow.getActionCard('clear_schedule')
       .registerRunListener(async () => {
         try {
-          await this.sendBatteryCommand('ems_schedule_clear');
+          await this.sendBatteryCommand('sched_clear');
           this.log('Schedule cleared successfully');
         } catch (err) {
           this.error('Failed to clear schedule:', err);
@@ -112,60 +112,68 @@ class HomevoltBatteryDevice extends Device {
 
     // Flow action card for charging the battery
     this.homey.flow.getActionCard('charge_battery')
-      .registerRunListener(async (args) => {
-        const { start_date, end_date, start_time, end_time } = args;
-        const from = `${start_date}T${start_time}`;
-        const to = `${end_date}T${end_time}`;
-
-        const command = `ems_schedule_set 1 --from=${from} --to=${to}`;
-
-        try {
-          await this.sendBatteryCommand(command);
-          this.log(`Schedule set for charging: ${command}`);
-        } catch (err) {
-          this.error('Failed to set charge schedule:', err);
-        }
-      });
-
-      // Flow action card for discharging the battery
-      this.homey.flow.getActionCard('discharge_battery')
-        .registerRunListener(async (args) => {
-          const { start_date, end_date, start_time, end_time } = args;
-          const from = `${start_date}T${start_time}`;
-          const to = `${end_date}T${end_time}`;
-
-          const command = `ems_schedule_set 2 --from=${from} --to=${to}`;
-
-          try {
-            await this.sendBatteryCommand(command);
-            this.log(`Schedule set for discharging: ${command}`);
-          } catch (err) {
-            this.error('Failed to set discharge schedule:', err);
-          }
-        });
-
-        // Flow action card for setting battery control mode
-        this.homey.flow.getActionCard('set_battery_control_mode')
-          .registerRunListener(async (args) => {
-            const value = args.mode;
-            this.log('Flow card: setting battery_control_mode to', value);
-
-            const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
-            try {
-              await this.sendBatteryCommand(command);
-              await this.sendBatteryCommand('param_store');
-              await this.setCapabilityValue('battery_control_mode', value);
-              return true;
-            } catch (err) {
-              this.error('Failed to set battery control mode from flow:', err);
-              throw new Error('Could not set battery control mode');
-            }
-          })
-          .registerArgumentAutocompleteListener('mode', async (query) => {
-            const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
-            return options.map(m => ({ name: m }));
-          });
+    .registerRunListener(async (args) => {
+      const { power, start_date, end_date, start_time, end_time } = args;
+      function formatDate(dateString) {
+        const [day, month, year] = dateString.split('-');
+        return `${year}-${month}-${day}`;
       }
+      const from = `${formatDate(start_date)}T${start_time}:00`;
+      const to = `${formatDate(end_date)}T${end_time}:00`;
+
+      const command = `sched_add 1 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+      try {
+        await this.sendBatteryCommand(command);
+        this.log(`Schedule set for charging: ${command}`);
+      } catch (err) {
+        this.error('Failed to set charge schedule:', err);
+        throw new Error(err.message);
+      }
+    });
+
+    // Flow action card for discharging the battery
+    this.homey.flow.getActionCard('discharge_battery')
+    .registerRunListener(async (args) => {
+      const { power, start_date, end_date, start_time, end_time } = args;
+      function formatDate(dateString) {
+        const [day, month, year] = dateString.split('-');
+        return `${year}-${month}-${day}`;
+      }
+      const from = `${formatDate(start_date)}T${start_time}:00`;
+      const to = `${formatDate(end_date)}T${end_time}:00`;
+
+      const command = `sched_add 2 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+      try {
+        await this.sendBatteryCommand(command);
+        this.log(`Schedule set for discharging: ${command}`);
+      } catch (err) {
+        this.error('Failed to set discharge schedule:', err);
+        throw new Error(err.message);
+      }
+    });
+
+    // Flow action card for setting battery control mode
+    this.homey.flow.getActionCard('set_battery_control_mode')
+    .registerRunListener(async (args) => {
+      const value = typeof args.mode === 'object' && args.mode.name ? args.mode.name : args.mode;
+      this.log('Flow card: setting battery_control_mode to', value);
+  
+      const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
+      try {
+        await this.sendBatteryCommand(command);
+        await this.sendBatteryCommand('param_store');
+        await this.setCapabilityValue('battery_control_mode', value);
+        return true;
+      } catch (err) {
+        this.error('Failed to set battery control mode from flow:', err);
+        throw new Error('Could not set battery control mode');
+      }
+    })
+    .registerArgumentAutocompleteListener('mode', async (query) => {
+      const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
+      return options.map(m => ({ name: m })); // This is fine
+    });
+  }
 
   /**
    * Poll the device at the configured interval
@@ -331,17 +339,21 @@ updateCapabilities(data) {
     const res = await fetch(`http://${this.ip}/console.json`, {
       method: 'POST',
       body: form,
-      headers: form.getHeaders(), // important!
+      headers: form.getHeaders(),
     });
   
+    const resultText = await res.text();
+  
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`HTTP ${res.status}: ${errorText}`);
+      throw new Error(`HTTP ${res.status}: ${resultText}`);
     }
   
-    const result = await res.text();
-    //this.log('Battery raw response:', result);
-    return result;
+    // Detect error in command output
+    if (resultText.toLowerCase().includes('error') || resultText.toLowerCase().includes('invalid')) {
+      throw new Error(`Device responded with error: ${resultText}`);
+    }
+  
+    return resultText;
   }
 }
 
