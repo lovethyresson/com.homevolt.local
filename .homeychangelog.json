@@ -67,5 +67,8 @@
   },
   "1.2.0": {
     "en": "Added UI picker for Battery control mode. Added flow cards for battery control mode, and setting/clearing schedules."
+  },
+  "1.2.1": {
+    "en": "Added support for manually setting battery control mode and local schedules."
   }
 }
