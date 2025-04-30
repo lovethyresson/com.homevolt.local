@@ -70,5 +70,8 @@
   },
   "1.2.1": {
     "en": "Added support for manually setting battery control mode and local schedules."
+  },
+  "1.3.0": {
+    "en": "Updated copy for current charge/discharge card to refer to planned charging. Added two new flow cards for charge now/discharge now."
   }
 }
