@@ -74,28 +74,28 @@
         "id": "charge_battery",
         "scope": "device",
         "title": {
-          "en": "Charge",
-          "de": "Laden",
-          "es": "Cargar",
-          "fr": "Charger",
-          "nl": "Opladen",
-          "sv": "Ladda"
+          "en": "Plan charging",
+          "de": "Ladevorgang planen",
+          "es": "Planificar carga",
+          "fr": "Planifier la charge",
+          "nl": "Laadplanning",
+          "sv": "Planera laddning"
         },
         "titleFormatted": {
-          "en": "Charge the battery: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
-          "de": "Lade die Batterie: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
-          "es": "Cargar la batería: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
-          "fr": "Charger la batterie: [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
-          "nl": "Laad de batterij: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
-          "sv": "Ladda upp batteriet: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
+          "en": "Plan charging: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
+          "de": "Ladevorgang planen: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
+          "es": "Planificar carga: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
+          "fr": "Planifier la charge : [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
+          "nl": "Laadplanning: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
+          "sv": "Planera laddning: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
         },
         "hint": {
-          "en": "Charge the battery",
-          "de": "Batterie laden",
-          "es": "Cargar la batería",
-          "fr": "Charger la batterie",
-          "nl": "Laad de batterij",
-          "sv": "Ladda batteriet"
+          "en": "Plan charging the battery",
+          "de": "Ladevorgang der Batterie planen",
+          "es": "Planificar la carga de la batería",
+          "fr": "Planifier la charge de la batterie",
+          "nl": "Plan de batterij opladen",
+          "sv": "Planera laddning av batteriet"
         },
         "args": [
           {
@@ -182,28 +182,28 @@
         "id": "discharge_battery",
         "scope": "device",
         "title": {
-          "en": "Discharge",
-          "de": "Entladen",
-          "es": "Descargar",
-          "fr": "Décharge",
-          "nl": "Ontladen",
-          "sv": "Ladda ur"
+          "en": "Plan discharging",
+          "de": "Entladevorgang planen",
+          "es": "Planificar descarga",
+          "fr": "Planifier la décharge",
+          "nl": "Ontladingsplanning",
+          "sv": "Planera urladdning"
         },
         "titleFormatted": {
-          "en": "Discharge the battery: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
-          "de": "Entlade die Batterie: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
-          "es": "Descargar la batería: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
-          "fr": "Décharger la batterie: [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
-          "nl": "Ontlaad de batterij: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
-          "sv": "Ladda ur batteriet: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
+          "en": "Plan discharging: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
+          "de": "Entladevorgang planen: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
+          "es": "Planificar descarga: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
+          "fr": "Planifier la décharge : [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
+          "nl": "Ontladingsplanning: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
+          "sv": "Planera urladdning: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
         },
         "hint": {
-          "en": "Discharge the battery",
-          "de": "Batterie entladen",
-          "es": "Descargar la batería",
-          "fr": "Décharger la batterie",
-          "nl": "Ontlaad de batterij",
-          "sv": "Ladda ur batteriet"
+          "en": "Plan discharging the battery",
+          "de": "Entladevorgang der Batterie planen",
+          "es": "Planificar la descarga de la batería",
+          "fr": "Planifier la décharge de la batterie",
+          "nl": "Plan de batterij ontladen",
+          "sv": "Planera urladdning av batteriet"
         },
         "args": [
           {
@@ -283,6 +283,93 @@
             "placeholder": {
               "en": "13:37"
             }
+          }
+        ]
+      }
+    ,
+      {
+        "id": "force_charge",
+        "scope": "device",
+        "title": {
+          "en": "Charge now",
+          "de": "Jetzt laden",
+          "es": "Cargar ahora",
+          "fr": "Charger maintenant",
+          "nl": "Nu opladen",
+          "sv": "Ladda nu"
+        },
+        "titleFormatted": {
+          "en": "Charge now with [[power]]W",
+          "de": "Jetzt laden mit [[power]]W",
+          "es": "Cargar ahora con [[power]]W",
+          "fr": "Charger maintenant à [[power]]W",
+          "nl": "Nu opladen met [[power]]W",
+          "sv": "Ladda nu med [[power]]W"
+        },
+        "hint": {
+          "en": "Charge immediately at given power",
+          "de": "Sofortiges Laden mit gegebener Leistung",
+          "es": "Cargar inmediatamente con la potencia dada",
+          "fr": "Charger immédiatement à la puissance donnée",
+          "nl": "Direct opladen op opgegeven vermogen",
+          "sv": "Ladda omedelbart med angiven effekt"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 1,
+            "max": 6000,
+            "step": 1
+          }
+        ]
+      },
+      {
+        "id": "force_discharge",
+        "scope": "device",
+        "title": {
+          "en": "Discharge now",
+          "de": "Jetzt entladen",
+          "es": "Descargar ahora",
+          "fr": "Décharger maintenant",
+          "nl": "Nu ontladen",
+          "sv": "Ladda ur nu"
+        },
+        "titleFormatted": {
+          "en": "Discharge now with [[power]]W",
+          "de": "Jetzt entladen mit [[power]]W",
+          "es": "Descargar ahora con [[power]]W",
+          "fr": "Décharger maintenant à [[power]]W",
+          "nl": "Nu ontladen met [[power]]W",
+          "sv": "Ladda ur nu med [[power]]W"
+        },
+        "hint": {
+          "en": "Discharge immediately at given power",
+          "de": "Sofortiges Entladen mit gegebener Leistung",
+          "es": "Descargar inmediatamente con la potencia dada",
+          "fr": "Décharger immédiatement à la puissance donnée",
+          "nl": "Direct ontladen op opgegeven vermogen",
+          "sv": "Ladda ur omedelbart med angiven effekt"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 0,
+            "max": 6000,
+            "step": 1
           }
         ]
       }

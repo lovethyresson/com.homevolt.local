@@ -110,7 +110,7 @@ class HomevoltBatteryDevice extends Device {
         }
       });
 
-    // Flow action card for charging the battery
+    // Flow action card for planning to charge the battery
     this.homey.flow.getActionCard('charge_battery')
     .registerRunListener(async (args) => {
       const { power, start_date, end_date, start_time, end_time } = args;
@@ -131,7 +131,7 @@ class HomevoltBatteryDevice extends Device {
       }
     });
 
-    // Flow action card for discharging the battery
+    // Flow action card for planning to discharge the battery
     this.homey.flow.getActionCard('discharge_battery')
     .registerRunListener(async (args) => {
       const { power, start_date, end_date, start_time, end_time } = args;
@@ -149,6 +149,36 @@ class HomevoltBatteryDevice extends Device {
       } catch (err) {
         this.error('Failed to set discharge schedule:', err);
         throw new Error(err.message);
+      }
+    });
+
+    // Flow action card for force charging the battery immediately
+    this.homey.flow.getActionCard('force_charge')
+    .registerRunListener(async (args) => {
+      const { power } = args;
+      const command = `sched_set 1 -s ${power}`;
+      try {
+        await this.sendBatteryCommand(command);
+        this.log(`Force charging at ${power}W`);
+        return true;
+      } catch (err) {
+        this.error('Failed to force charge:', err);
+        throw new Error('Could not start force charging');
+      }
+    });
+
+    // Flow action card for force discharging the battery immediately
+    this.homey.flow.getActionCard('force_discharge')
+    .registerRunListener(async (args) => {
+      const { power } = args;
+      const command = `sched_set 2 -s ${power}`;
+      try {
+        await this.sendBatteryCommand(command);
+        this.log(`Force discharging at ${power}W`);
+        return true;
+      } catch (err) {
+        this.error('Failed to force discharge:', err);
+        throw new Error('Could not start force discharging');
       }
     });
 
