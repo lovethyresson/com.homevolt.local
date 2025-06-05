@@ -650,7 +650,9 @@
         "homeBattery": true,
         "batteries": [
           "INTERNAL"
-        ]
+        ],
+        "meterPowerImportedCapability": "meter_power.imported",
+        "meterPowerExportedCapability": "meter_power.exported"
       },
       "images": {
         "xlarge": "/drivers/homevolt-battery/assets/images/xlarge.png",
