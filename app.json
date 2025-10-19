@@ -12,7 +12,7 @@
     "fr": "L'énergie domestique à portée de main",
     "es": "Energía para el hogar al alcance de tu mano"
   },
-  "version": "1.4.0",
+  "version": "1.4.1",
   "sdk": 3,
   "compatibility": ">=12.2.0",
   "author": {
