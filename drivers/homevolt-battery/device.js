@@ -353,27 +353,67 @@ updateCapabilities(data) {
   }
 
   async syncBatteryControlMode() {
-    const formData = new URLSearchParams();
-    formData.append('cmd', 'param_dump');
+    // Try a few firmware variants; don't throw from here so device init never fails
+    const commands = [
+      'param_get settings_local', // newest firmware
+      'param_dump',               // older firmware
+      'help'                      // last resort: might list current settings inline
+    ];
 
-    const res = await fetch(`http://${this.ip}/console.json`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    for (const cmd of commands) {
+      try {
+        const resText = await this.sendBatteryCommand(cmd);
+        const text = String(resText || '').trim();
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        // Common patterns:
+        // 1) "settings_local true" / "settings_local false"
+        // 2) Just "true" or "false" when using param_get
+        // 3) A help/dump that contains the key somewhere in the output
+        const kvMatch = text.match(/settings_local\s+(true|false)/i);
+        if (kvMatch) {
+          const isLocal = kvMatch[1].toLowerCase() === 'true';
+          const mode = isLocal ? 'local' : 'remote';
+          await this.setCapabilityValue('battery_control_mode', mode).catch(this.error);
+          this.log(`Synced battery_control_mode using '${cmd}': ${mode}`);
+          return true;
+        }
+
+        if (/^\s*true\s*$/im.test(text)) {
+          await this.setCapabilityValue('battery_control_mode', 'local').catch(this.error);
+          this.log(`Synced battery_control_mode using '${cmd}': local`);
+          return true;
+        }
+        if (/^\s*false\s*$/im.test(text)) {
+          await this.setCapabilityValue('battery_control_mode', 'remote').catch(this.error);
+          this.log(`Synced battery_control_mode using '${cmd}': remote`);
+          return true;
+        }
+
+        // If 'help' returns something that clearly shows settings_local=true/false inline
+        if (cmd === 'help') {
+          const helpMatch = text.match(/settings_local\s*=\s*(true|false)/i);
+          if (helpMatch) {
+            const isLocal = helpMatch[1].toLowerCase() === 'true';
+            const mode = isLocal ? 'local' : 'remote';
+            await this.setCapabilityValue('battery_control_mode', mode).catch(this.error);
+            this.log(`Synced battery_control_mode by parsing help: ${mode}`);
+            return true;
+          }
+        }
+
+        // If we reach here for this cmd, continue to next variant
+        this.log(`syncBatteryControlMode: '${cmd}' returned no parsable value.`);
+      } catch (e) {
+        // sendBatteryCommand throws for HTTP errors; swallow and try next variant
+        this.log(`syncBatteryControlMode: '${cmd}' failed: ${e.message}`);
+        continue;
+      }
     }
 
-    const resultText = await res.text();
-    const isLocal = resultText.includes('settings_local true');
-
-    const mode = isLocal ? 'local' : 'remote';
-    await this.setCapabilityValue('battery_control_mode', mode).catch(this.error);
-    this.log(`Synced battery_control_mode to: ${mode}`);
+    // Fallback: don't fail init; default to 'remote' and continue
+    this.log('syncBatteryControlMode: could not determine settings_local; defaulting to remote');
+    await this.setCapabilityValue('battery_control_mode', 'remote').catch(this.error);
+    return false;
   }
 
   async sendBatteryCommand(cmd) {

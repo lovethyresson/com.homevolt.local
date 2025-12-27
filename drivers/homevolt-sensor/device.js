@@ -3,14 +3,13 @@ const fetch = require('node-fetch');
 
 class HomevoltSensorDevice extends Device {
   onDiscoveryResult(discoveryResult) {
-    // Return a truthy value here if the discovery result matches your device.
     return discoveryResult.id === this.getData().id;
   }
 
   async onDiscoveryAvailable(discoveryResult) {
     try {
-      this.ip = discoveryResult.address; // Update IP address
-      await this.setAvailable(); // Mark as available
+      this.ip = discoveryResult.address;
+      await this.setAvailable();
       this.log(`Device is available at ${this.ip}`);
     } catch (error) {
       this.log('Error in onDiscoveryAvailable:', error.message);
@@ -18,82 +17,102 @@ class HomevoltSensorDevice extends Device {
   }
 
   async onDiscoveryAddressChanged(discoveryResult) {
-    this.ip = discoveryResult.address; // Update IP address
+    this.ip = discoveryResult.address;
     this.log(`Address changed to ${this.ip}`);
     await this.setAvailable();
   }
 
-
   async onDiscoveryLastSeenChanged(discoveryResult) {
     this.log(`Device last seen at ${discoveryResult.lastSeen}`);
-    // Optionally handle reconnection logic here
   }
-  
 
   async onInit() {
     this.log(`Initializing sensor device: ${this.getName()} (${this.getData().type})`);
 
-    this.type = this.getData().type; // "grid" or "solar"
-    this.ip = this.getData().ip; // IP address of the device
+    this.type = this.getData().type; // "grid" | "solar" | "battery" | "load"
+    this.ip = this.getData().ip;
 
-    // Get initial values
+    // Initial fetch (non-blocking)
     this.fetchData().catch(this.error);
 
-    // Get the initial polling interval from the app
+    // Polling interval (seconds -> ms)
     const appPollingInterval = this.homey.app.getPollingInterval();
     this.log(`Initial polling interval: ${appPollingInterval} seconds`);
     this.pollingInterval = appPollingInterval * 1000;
 
-
-    // Start polling
     await this.setAvailable();
     this.startPolling();
   }
 
-  /**
-   * Poll the device at the configured interval
-   */
   startPolling() {
-    //this.log(`Starting polling every ${this.pollingInterval / 1000} seconds`);
-
-    // Clear any existing timer
-    if (this.pollingTimer) {
-        clearInterval(this.pollingTimer);
-    }
-
-    // Start a new polling timer
+    if (this.pollingTimer) clearInterval(this.pollingTimer);
     this.pollingTimer = setInterval(async () => {
-        try {
-            await this.fetchData();
-        } catch (error) {
-            this.error('Error during polling:', error.message);
-        }
+      try {
+        await this.fetchData();
+      } catch (error) {
+        this.error('Error during polling:', error.message);
+      }
     }, this.pollingInterval);
-}
-
-restartPolling(newInterval) {
-    this.log(`Restarting polling with new interval: ${newInterval} seconds`);
-    this.pollingInterval = newInterval * 1000; // Convert to milliseconds
-    this.startPolling();
-}
-
-  /**
-   * If app settings change, update polling interval and restart polling
-   */
-  restartPolling(newInterval) {
-      this.log(`Restarting polling with new interval: ${newInterval} seconds`);
-      this.pollingInterval = newInterval; 
-      this.startPolling();
   }
-  
+
+  // Keep only ONE restartPolling; accept seconds and convert to ms
+  restartPolling(newIntervalSeconds) {
+    this.log(`Restarting polling with new interval: ${newIntervalSeconds} seconds`);
+    this.pollingInterval = newIntervalSeconds * 1000;
+    this.startPolling();
+  }
+
   async fetchData() {
     try {
       const data = await this.homey.app.getStatus({ address: this.ip });
-      const sensorData = data.sensors.find(sensor => sensor.type === this.type);
 
-      if (sensorData) {
-        this.updateCapabilities(sensorData);
+      if (!data || !Array.isArray(data.sensors)) {
+        throw new Error('Missing sensors array');
       }
+
+      // NEW: match on `function`, not `type`
+      const sensorData = data.sensors.find(s => s.function === this.type);
+
+      // Helper to keep solar online with zeros
+      const keepSolarOnline = (src = {}) => {
+        const zeroPhase = [{ amp: 0 }, { amp: 0 }, { amp: 0 }];
+        const fallback = {
+          total_power: 0,
+          energy_imported: src.energy_imported ?? 0,
+          energy_exported: src.energy_exported ?? 0,
+          rssi: typeof src.rssi === 'number' ? src.rssi : 0,
+          phase: Array.isArray(src.phase) && src.phase.length ? src.phase : zeroPhase,
+        };
+        this.updateCapabilities(fallback);
+        return true;
+      };
+
+      // If sensor not found
+      if (!sensorData) {
+        if (this.type === 'solar') {
+          // Keep solar device online even when the feed omits it (e.g., night)
+          keepSolarOnline();
+          await this.setAvailable();
+          return;
+        }
+        await this.setUnavailable(`No '${this.type}' sensor in payload`);
+        return;
+      }
+
+      // If sensor is present but marked unavailable or stale, keep solar online
+      const isStaleSolar = this.type === 'solar' && (!sensorData.timestamp || sensorData.timestamp === 0);
+      if (sensorData.available === false || isStaleSolar) {
+        if (this.type === 'solar') {
+          keepSolarOnline(sensorData);
+          await this.setAvailable();
+          return;
+        }
+        await this.setUnavailable(`'${this.type}' sensor unavailable`);
+        return;
+      }
+
+      // Normal path
+      this.updateCapabilities(sensorData);
     } catch (error) {
       this.log('Error fetching sensor data:', error.message);
       await this.setUnavailable('Error fetching data');
@@ -101,25 +120,23 @@ restartPolling(newInterval) {
   }
 
   updateCapabilities(sensorData) {
-    //this.log(`Updating capabilities for ${this.type} sensor`);
+    // Safely extract fields
+    const { total_power, energy_imported, energy_exported, rssi } = sensorData;
 
-    const totalPower = sensorData.total_power;
-    const energyImported = sensorData.energy_imported;
-    const energyExported = sensorData.energy_exported;
-    const rssi = sensorData.rssi;
-    const currentL1 = sensorData.phase[0].amp; // Amp for phase L1
-    const currentL2 = sensorData.phase[1].amp; // Amp for phase L2
-    const currentL3 = sensorData.phase[2].amp; // Amp for phase L3
+    // Phase array may be missing/short
+    const p = Array.isArray(sensorData.phase) ? sensorData.phase : [];
+    const currentL1 = p[0]?.amp;
+    const currentL2 = p[1]?.amp;
+    const currentL3 = p[2]?.amp;
 
-
-    if (totalPower !== undefined) {
-      this.setCapabilityValue('measure_power', totalPower).catch(this.error);
+    if (total_power !== undefined) {
+      this.setCapabilityValue('measure_power', total_power).catch(this.error);
     }
-    if (energyImported !== undefined) {
-      this.setCapabilityValue('meter_power.imported', energyImported).catch(this.error);
+    if (energy_imported !== undefined) {
+      this.setCapabilityValue('meter_power.imported', energy_imported).catch(this.error);
     }
-    if (energyExported !== undefined) {
-      this.setCapabilityValue('meter_power.exported', energyExported).catch(this.error);
+    if (energy_exported !== undefined) {
+      this.setCapabilityValue('meter_power.exported', energy_exported).catch(this.error);
     }
     if (rssi !== undefined) {
       this.setCapabilityValue('measure_signal_strength', rssi).catch(this.error);
@@ -134,14 +151,12 @@ restartPolling(newInterval) {
       this.setCapabilityValue('measure_power.currentL3', currentL3).catch(this.error);
     }
 
-    this.setAvailable().catch(this.error); // Ensure the device remains available after updates
+    this.setAvailable().catch(this.error);
   }
 
   async onDeleted() {
     this.log(`Sensor device deleted: ${this.getName()}`);
-    if (this.pollingTimer) {
-      clearInterval(this.pollingTimer);
-    }
+    if (this.pollingTimer) clearInterval(this.pollingTimer);
   }
 }
 
