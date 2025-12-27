@@ -4,6 +4,24 @@ const FormData = require('form-data');
 
 class HomevoltBatteryDevice extends Device {
 
+  /**
+   * Ensure a capability exists on the device, adding it if missing.
+   * @param {string} capabilityId
+   * @returns {Promise<boolean>}
+   */
+  async ensureCapability(capabilityId) {
+    try {
+      if (!this.hasCapability(capabilityId)) {
+        this.log(`Missing capability '${capabilityId}' on device, adding it for backwards compatibility`);
+        await this.addCapability(capabilityId);
+      }
+      return true;
+    } catch (err) {
+      this.error(`Failed to ensure capability '${capabilityId}':`, err);
+      return false;
+    }
+  }
+
   onDiscoveryResult(discoveryResult) {
     // Return a truthy value here if the discovery result matches your device.
     return discoveryResult.id === this.getData().id;
@@ -42,6 +60,136 @@ class HomevoltBatteryDevice extends Device {
 
     this.log(`Initializing battery device: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
 
+    // Register flow cards only once per app process to avoid duplicate listener warnings
+    if (!this.homey.app._homevoltFlowCardsRegistered) {
+      this.homey.app._homevoltFlowCardsRegistered = true;
+
+      // Register capability listener for battery status
+      const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
+      cardConditionBatteryStatus.registerRunListener(async (args, state) => {
+        try {
+          const data = await this.homey.app.getStatus({ address: this.ip });
+          const raw = data?.ems?.[0]?.op_state_str;
+          const batteryStatus = typeof raw === 'string' ? raw.toLowerCase() : 'unknown';
+          this.log(`Condition card executed. Card: ${args.battery_status}, Battery: ${batteryStatus}`);
+          return batteryStatus === args.battery_status;
+        } catch (error) {
+          this.error('Error in battery_status condition:', error.message);
+          return false;
+        }
+      });
+
+      // Flow action for clearing the schedule
+      this.homey.flow.getActionCard('clear_schedule')
+        .registerRunListener(async () => {
+          try {
+            await this.sendBatteryCommand('sched_clear');
+            this.log('Schedule cleared successfully');
+          } catch (err) {
+            this.error('Failed to clear schedule:', err);
+          }
+        });
+
+      // Flow action card for planning to charge the battery
+      this.homey.flow.getActionCard('charge_battery')
+      .registerRunListener(async (args) => {
+        const { power, start_date, end_date, start_time, end_time } = args;
+        function formatDate(dateString) {
+          const [day, month, year] = dateString.split('-');
+          return `${year}-${month}-${day}`;
+        }
+        const from = `${formatDate(start_date)}T${start_time}:00`;
+        const to = `${formatDate(end_date)}T${end_time}:00`;
+
+        const command = `sched_add 1 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+        try {
+          await this.sendBatteryCommand(command);
+          this.log(`Schedule set for charging: ${command}`);
+        } catch (err) {
+          this.error('Failed to set charge schedule:', err);
+          throw new Error(err.message);
+        }
+      });
+
+      // Flow action card for planning to discharge the battery
+      this.homey.flow.getActionCard('discharge_battery')
+      .registerRunListener(async (args) => {
+        const { power, start_date, end_date, start_time, end_time } = args;
+        function formatDate(dateString) {
+          const [day, month, year] = dateString.split('-');
+          return `${year}-${month}-${day}`;
+        }
+        const from = `${formatDate(start_date)}T${start_time}:00`;
+        const to = `${formatDate(end_date)}T${end_time}:00`;
+
+        const command = `sched_add 2 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+        try {
+          await this.sendBatteryCommand(command);
+          this.log(`Schedule set for discharging: ${command}`);
+        } catch (err) {
+          this.error('Failed to set discharge schedule:', err);
+          throw new Error(err.message);
+        }
+      });
+
+      // Flow action card for force charging the battery immediately
+      this.homey.flow.getActionCard('force_charge')
+      .registerRunListener(async (args) => {
+        const { power } = args;
+        const command = `sched_set 1 -s ${power}`;
+        try {
+          await this.sendBatteryCommand(command);
+          this.log(`Force charging at ${power}W`);
+          return true;
+        } catch (err) {
+          this.error('Failed to force charge:', err);
+          throw new Error('Could not start force charging');
+        }
+      });
+
+      // Flow action card for force discharging the battery immediately
+      this.homey.flow.getActionCard('force_discharge')
+      .registerRunListener(async (args) => {
+        const { power } = args;
+        const command = `sched_set 2 -s ${power}`;
+        try {
+          await this.sendBatteryCommand(command);
+          this.log(`Force discharging at ${power}W`);
+          return true;
+        } catch (err) {
+          this.error('Failed to force discharge:', err);
+          throw new Error('Could not start force discharging');
+        }
+      });
+
+      // Flow action card for setting battery control mode
+      this.homey.flow.getActionCard('set_battery_control_mode')
+      .registerRunListener(async (args) => {
+        const value = typeof args.mode === 'object' && args.mode.name ? args.mode.name : args.mode;
+        this.log('Flow card: setting battery_control_mode to', value);
+
+        const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
+        try {
+          await this.sendBatteryCommand(command);
+          await this.sendBatteryCommand('param_store');
+          if (this.hasCapability('battery_control_mode')) {
+            await this.setCapabilityValue('battery_control_mode', value);
+          }
+          return true;
+        } catch (err) {
+          this.error('Failed to set battery control mode from flow:', err);
+          throw new Error('Could not set battery control mode');
+        }
+      })
+      .registerArgumentAutocompleteListener('mode', async (query) => {
+        const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
+        return options.map(m => ({ name: m }));
+      });
+    }
+
+    // Backwards compatibility: devices paired before new capabilities were introduced
+    await this.ensureCapability('battery_control_mode');
+
     // Get initial values
     await this.fetchData().catch(this.error);
     await this.syncBatteryControlMode().catch(this.error);
@@ -50,7 +198,6 @@ class HomevoltBatteryDevice extends Device {
     await this.initSettings();
 
     // Update energy settings if needed
-    this.log(this.getEnergy())
     this.on('energy-settings', (energySettings) => {
       if (energySettings.isSmartMeter() && !this.getEnergy().cumulative) {
         this.log('Updating energy settings for smart meter');
@@ -63,160 +210,32 @@ class HomevoltBatteryDevice extends Device {
       }
     });
 
-    this.registerCapabilityListener('battery_control_mode', async (value) => {
-      this.log('battery_control_mode changed to:', value);
-      const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
-      try {
-        const resultSet = await this.sendBatteryCommand(command);
-        //this.log(`Battery response (param_set): ${resultSet}`);
-    
-        const resultStore = await this.sendBatteryCommand('param_store');
-        //this.log(`Battery response (param_store): ${resultStore}`);
-    
-      } catch (err) {
-        this.error('Failed to send battery control mode command:', err);
-        throw new Error('Battery control mode command failed');
-      }
-    });
+    if (this.hasCapability('battery_control_mode')) {
+      this.registerCapabilityListener('battery_control_mode', async (value) => {
+        this.log('battery_control_mode changed to:', value);
+        const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
+        try {
+          const resultSet = await this.sendBatteryCommand(command);
+          //this.log(`Battery response (param_set): ${resultSet}`);
 
-    // Register capability listener for battery status
-    const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
-    cardConditionBatteryStatus.registerRunListener(async (args, state) => {
-      try {
-        // Fetch data using the app's getStatus function
-        const data = await this.homey.app.getStatus({ address: this.ip });
-    
-        // Extract battery status from fetched data
-        const batteryStatus = data.ems[0]?.op_state_str;
-    
-        // Log the values for debugging
-        this.log(`Condition card executed. Card: ${args.battery_status}, Battery: ${batteryStatus}`);
-            
-        // Compare user-selected state with actual battery status
-        return batteryStatus === args.battery_status;
-      } catch (error) {
-        this.error('Error in battery_status condition:', error.message);
-        return false; // Fail safely
-      }
-    });
-    
+          const resultStore = await this.sendBatteryCommand('param_store');
+          //this.log(`Battery response (param_store): ${resultStore}`);
+
+        } catch (err) {
+          this.error('Failed to send battery control mode command:', err);
+          throw new Error('Battery control mode command failed');
+        }
+      });
+    }
 
     // Get the initial polling interval from the app
     const appPollingInterval = this.homey.app.getPollingInterval();
     this.log(`Initial polling interval: ${appPollingInterval} seconds`);
     this.pollingInterval = appPollingInterval * 1000;
 
-
     // Start polling
     await this.setAvailable();
     this.startPolling();
-
-    // Register flow action cards
-
-    // Flow action for clearing the schedule
-    this.homey.flow.getActionCard('clear_schedule')
-      .registerRunListener(async () => {
-        try {
-          await this.sendBatteryCommand('sched_clear');
-          this.log('Schedule cleared successfully');
-        } catch (err) {
-          this.error('Failed to clear schedule:', err);
-        }
-      });
-
-    // Flow action card for planning to charge the battery
-    this.homey.flow.getActionCard('charge_battery')
-    .registerRunListener(async (args) => {
-      const { power, start_date, end_date, start_time, end_time } = args;
-      function formatDate(dateString) {
-        const [day, month, year] = dateString.split('-');
-        return `${year}-${month}-${day}`;
-      }
-      const from = `${formatDate(start_date)}T${start_time}:00`;
-      const to = `${formatDate(end_date)}T${end_time}:00`;
-
-      const command = `sched_add 1 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
-      try {
-        await this.sendBatteryCommand(command);
-        this.log(`Schedule set for charging: ${command}`);
-      } catch (err) {
-        this.error('Failed to set charge schedule:', err);
-        throw new Error(err.message);
-      }
-    });
-
-    // Flow action card for planning to discharge the battery
-    this.homey.flow.getActionCard('discharge_battery')
-    .registerRunListener(async (args) => {
-      const { power, start_date, end_date, start_time, end_time } = args;
-      function formatDate(dateString) {
-        const [day, month, year] = dateString.split('-');
-        return `${year}-${month}-${day}`;
-      }
-      const from = `${formatDate(start_date)}T${start_time}:00`;
-      const to = `${formatDate(end_date)}T${end_time}:00`;
-
-      const command = `sched_add 2 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
-      try {
-        await this.sendBatteryCommand(command);
-        this.log(`Schedule set for discharging: ${command}`);
-      } catch (err) {
-        this.error('Failed to set discharge schedule:', err);
-        throw new Error(err.message);
-      }
-    });
-
-    // Flow action card for force charging the battery immediately
-    this.homey.flow.getActionCard('force_charge')
-    .registerRunListener(async (args) => {
-      const { power } = args;
-      const command = `sched_set 1 -s ${power}`;
-      try {
-        await this.sendBatteryCommand(command);
-        this.log(`Force charging at ${power}W`);
-        return true;
-      } catch (err) {
-        this.error('Failed to force charge:', err);
-        throw new Error('Could not start force charging');
-      }
-    });
-
-    // Flow action card for force discharging the battery immediately
-    this.homey.flow.getActionCard('force_discharge')
-    .registerRunListener(async (args) => {
-      const { power } = args;
-      const command = `sched_set 2 -s ${power}`;
-      try {
-        await this.sendBatteryCommand(command);
-        this.log(`Force discharging at ${power}W`);
-        return true;
-      } catch (err) {
-        this.error('Failed to force discharge:', err);
-        throw new Error('Could not start force discharging');
-      }
-    });
-
-    // Flow action card for setting battery control mode
-    this.homey.flow.getActionCard('set_battery_control_mode')
-    .registerRunListener(async (args) => {
-      const value = typeof args.mode === 'object' && args.mode.name ? args.mode.name : args.mode;
-      this.log('Flow card: setting battery_control_mode to', value);
-  
-      const command = `param_set settings_local ${value === 'local' ? 'true' : 'false'}`;
-      try {
-        await this.sendBatteryCommand(command);
-        await this.sendBatteryCommand('param_store');
-        await this.setCapabilityValue('battery_control_mode', value);
-        return true;
-      } catch (err) {
-        this.error('Failed to set battery control mode from flow:', err);
-        throw new Error('Could not set battery control mode');
-      }
-    })
-    .registerArgumentAutocompleteListener('mode', async (query) => {
-      const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
-      return options.map(m => ({ name: m })); // This is fine
-    });
   }
 
   /**
@@ -353,6 +372,11 @@ updateCapabilities(data) {
   }
 
   async syncBatteryControlMode() {
+    // If capability is missing and couldn't be added, don't blow up device init
+    if (!this.hasCapability('battery_control_mode')) {
+      this.log('syncBatteryControlMode: battery_control_mode capability not present; skipping sync');
+      return false;
+    }
     // Try a few firmware variants; don't throw from here so device init never fails
     const commands = [
       'param_get settings_local', // newest firmware

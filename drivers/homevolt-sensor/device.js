@@ -70,8 +70,27 @@ class HomevoltSensorDevice extends Device {
         throw new Error('Missing sensors array');
       }
 
-      // NEW: match on `function`, not `type`
-      const sensorData = data.sensors.find(s => s.function === this.type);
+      // Robust matching: firmware payloads vary (`function`, `type`, sometimes slightly different names)
+      const normalize = (v) => String(v || '').toLowerCase();
+      const want = normalize(this.type);
+
+      const aliases = {
+        grid: ['grid', 'grid_pulse', 'gridpulse'],
+        solar: ['solar', 'pv', 'photovoltaic'],
+        battery: ['battery', 'batt'],
+        load: ['load', 'consumption', 'house'],
+      };
+
+      const match = (s) => {
+        const f = normalize(s.function);
+        const t = normalize(s.type);
+        const n = normalize(s.name);
+        const candidates = [f, t, n].filter(Boolean);
+        const accepted = aliases[want] || [want];
+        return candidates.some(c => accepted.includes(c));
+      };
+
+      const sensorData = data.sensors.find(match);
 
       // Helper to keep solar online with zeros
       const keepSolarOnline = (src = {}) => {
@@ -80,7 +99,7 @@ class HomevoltSensorDevice extends Device {
           total_power: 0,
           energy_imported: src.energy_imported ?? 0,
           energy_exported: src.energy_exported ?? 0,
-          rssi: typeof src.rssi === 'number' ? src.rssi : 0,
+          rssi: Number.isFinite(Number(src.rssi)) ? Number(src.rssi) : 0,
           phase: Array.isArray(src.phase) && src.phase.length ? src.phase : zeroPhase,
         };
         this.updateCapabilities(fallback);
@@ -89,6 +108,11 @@ class HomevoltSensorDevice extends Device {
 
       // If sensor not found
       if (!sensorData) {
+        const present = data.sensors
+          .map(s => ({ function: s.function, type: s.type, name: s.name }))
+          .slice(0, 20);
+        this.log(`No match for sensor type '${this.type}'. Present sensors:`, present);
+
         if (this.type === 'solar') {
           // Keep solar device online even when the feed omits it (e.g., night)
           keepSolarOnline();
@@ -99,8 +123,8 @@ class HomevoltSensorDevice extends Device {
         return;
       }
 
-      // If sensor is present but marked unavailable or stale, keep solar online
-      const isStaleSolar = this.type === 'solar' && (!sensorData.timestamp || sensorData.timestamp === 0);
+      // Only treat as stale if timestamp is explicitly 0 (some firmwares omit timestamp entirely)
+      const isStaleSolar = this.type === 'solar' && sensorData.timestamp === 0;
       if (sensorData.available === false || isStaleSolar) {
         if (this.type === 'solar') {
           keepSolarOnline(sensorData);
@@ -115,7 +139,7 @@ class HomevoltSensorDevice extends Device {
       this.updateCapabilities(sensorData);
     } catch (error) {
       this.log('Error fetching sensor data:', error.message);
-      await this.setUnavailable('Error fetching data');
+      await this.setUnavailable(`Error fetching data: ${error.message}`);
     }
   }
 
@@ -123,23 +147,33 @@ class HomevoltSensorDevice extends Device {
     // Safely extract fields
     const { total_power, energy_imported, energy_exported, rssi } = sensorData;
 
+    const toNumberOrUndefined = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : undefined;
+    };
+
+    const totalPowerN = toNumberOrUndefined(total_power);
+    const importedN = toNumberOrUndefined(energy_imported);
+    const exportedN = toNumberOrUndefined(energy_exported);
+    const rssiN = toNumberOrUndefined(rssi);
+
     // Phase array may be missing/short
     const p = Array.isArray(sensorData.phase) ? sensorData.phase : [];
-    const currentL1 = p[0]?.amp;
-    const currentL2 = p[1]?.amp;
-    const currentL3 = p[2]?.amp;
+    const currentL1 = toNumberOrUndefined(p[0]?.amp);
+    const currentL2 = toNumberOrUndefined(p[1]?.amp);
+    const currentL3 = toNumberOrUndefined(p[2]?.amp);
 
-    if (total_power !== undefined) {
-      this.setCapabilityValue('measure_power', total_power).catch(this.error);
+    if (totalPowerN !== undefined) {
+      this.setCapabilityValue('measure_power', totalPowerN).catch(this.error);
     }
-    if (energy_imported !== undefined) {
-      this.setCapabilityValue('meter_power.imported', energy_imported).catch(this.error);
+    if (importedN !== undefined) {
+      this.setCapabilityValue('meter_power.imported', importedN).catch(this.error);
     }
-    if (energy_exported !== undefined) {
-      this.setCapabilityValue('meter_power.exported', energy_exported).catch(this.error);
+    if (exportedN !== undefined) {
+      this.setCapabilityValue('meter_power.exported', exportedN).catch(this.error);
     }
-    if (rssi !== undefined) {
-      this.setCapabilityValue('measure_signal_strength', rssi).catch(this.error);
+    if (rssiN !== undefined) {
+      this.setCapabilityValue('measure_signal_strength', rssiN).catch(this.error);
     }
     if (currentL1 !== undefined) {
       this.setCapabilityValue('measure_power.currentL1', currentL1).catch(this.error);
