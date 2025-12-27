@@ -350,22 +350,43 @@ updateCapabilities(data) {
       // Fetch data safely
       const data = await this.homey.app.getStatus({ address: this.ip }) || {};
       const system = await this.homey.app.getSystem({ address: this.ip }) || {};
-  
+
+      // Aggregate values across multiple EMS entries AND battery packs
+      const emsList = Array.isArray(data?.ems) ? data.ems : [];
+
+      // Total number of battery packs across all EMS entries
+      const totalBatteryPacks = emsList.reduce(
+        (sum, ems) => sum + (Array.isArray(ems?.bms_info) ? ems.bms_info.length : 0),
+        0
+      );
+
+      // Rated capacity is per pack (bms_info.rated_cap), so sum all packs
+      const totalRatedCapacity = emsList.reduce((sum, ems) => {
+        const packs = Array.isArray(ems?.bms_info) ? ems.bms_info : [];
+        return sum + packs.reduce((s, p) => s + (p?.rated_cap || 0), 0);
+      }, 0);
+
+      // Available capacity is already aggregated per EMS entry (ems_data.avail_cap), so sum across EMS entries
+      const totalAvailableCapacity = emsList.reduce((sum, ems) => sum + (ems?.ems_data?.avail_cap || 0), 0);
+
+      // Rated power is per EMS (inverter/EMS), so sum across EMS entries
+      const totalRatedPower = emsList.reduce((sum, ems) => sum + (ems?.ems_info?.rated_power || 0), 0);
+
       // Safeguard against missing properties
       const settings = {
         wifi_ssid: system?.wifi_status?.ssid || "No SSID found", 
         wifi_ip: system?.wifi_status?.ip || "Unknown",          
-        battery_packs: `${data?.ems?.[0]?.bms_info?.length || 0}`,
-        rated_capacity: `${(data?.ems?.[0]?.ems_info?.rated_capacity || 0) / 1000} kWh`,
-        available_capacity: `${(data?.ems?.[0]?.ems_data?.avail_cap || 0) / 1000} kWh`,
-        rated_power: `${(data?.ems?.[0]?.ems_info?.rated_power || 0) / 1000} kW`
+        battery_packs: `${totalBatteryPacks || 0}`,
+        rated_capacity: `${(totalRatedCapacity || 0) / 1000} kWh`,
+        available_capacity: `${(totalAvailableCapacity || 0) / 1000} kWh`,
+        rated_power: `${(totalRatedPower || 0) / 1000} kW`
       };
-  
+
       this.log('Init device settings with:', settings);
-  
+
       // Apply settings safely
       await this.setSettings(settings).catch(err => this.error("Error applying settings:", err));
-  
+
     } catch (error) {
       this.error("Error initializing device settings:", error);
     }
