@@ -12,7 +12,7 @@
     "fr": "L'énergie domestique à portée de main",
     "es": "Energía para el hogar al alcance de tu mano"
   },
-  "version": "1.4.2",
+  "version": "1.4.3",
   "sdk": 3,
   "compatibility": ">=12.2.0",
   "author": {
@@ -306,7 +306,7 @@
               "en": "6000"
             },
             "min": 0,
-            "max": 6000,
+            "max": 12000,
             "step": 1
           },
           {
@@ -419,7 +419,7 @@
               "en": "6000"
             },
             "min": 0,
-            "max": 6000,
+            "max": 12000,
             "step": 1
           },
           {
@@ -527,7 +527,7 @@
               "en": "6000"
             },
             "min": 1,
-            "max": 6000,
+            "max": 12000,
             "step": 1
           }
         ]
@@ -575,7 +575,7 @@
               "en": "6000"
             },
             "min": 0,
-            "max": 6000,
+            "max": 12000,
             "step": 1
           }
         ]

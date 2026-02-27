@@ -82,5 +82,8 @@
   },
   "1.4.2": {
     "en": "Increased fault tollerance with older firmware versions."
+  },
+  "1.4.3": {
+    "en": "Tweak for dual Homevolt setup (max charge limit 12kW)."
   }
 }
