@@ -20,6 +20,7 @@ Monitor your charge level, charge/discharge pattern and even grid frequency from
 - Auth is not supported. Password needs to be disabled on the local web server.
 - No scheduling support (yet).
 - Pairing (mdns discovery) parses the hostname to detect a Homevolt device and serial number. If you change this pairing will likely fail.
+- If mDNS discovery can't find your device (e.g. it's on a different subnet than Homey), you can enter its IP address manually on the pairing screen. If that IP later changes, use "Repair" on the device (in its advanced settings) to update it without re-pairing.
 
 
 ## LINKS

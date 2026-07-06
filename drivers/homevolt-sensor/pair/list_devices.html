@@ -1,0 +1,87 @@
+<style>
+  .device-list { margin: 0 0 16px; }
+  .device-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .device-row:hover { background: #f5f5f5; }
+  .device-name { font-weight: 600; }
+  .device-ip { color: #888; font-size: 0.9em; }
+  .divider {
+    display: flex;
+    align-items: center;
+    color: #888;
+    font-size: 0.9em;
+    margin: 20px 0;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+  }
+  .divider span { margin: 0 10px; }
+  .hint { color: #888; font-size: 0.85em; margin: 6px 0 14px; }
+  #manual-ip { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
+</style>
+
+<p>Devices found on your network:</p>
+<div class="device-list" id="device-list"></div>
+
+<div class="divider"><span>or enter it manually</span></div>
+
+<label for="manual-ip">IP address</label>
+<input type="text" id="manual-ip" placeholder="192.168.2.50" />
+<p class="hint">Use this if your Grid Sensor wasn't found above, e.g. it's on a different subnet than Homey.</p>
+<button type="button" id="connect-btn" class="homey-button-primary-full">Connect</button>
+
+<script type="text/javascript">
+  function addDevice(device) {
+    Homey.showLoadingOverlay();
+    Homey.createDevice(device)
+      .then(() => Homey.done())
+      .catch((err) => {
+        Homey.hideLoadingOverlay();
+        Homey.alert(err.message || err);
+      });
+  }
+
+  function renderDevices(devices) {
+    const list = document.getElementById('device-list');
+    list.innerHTML = '';
+    (devices || []).forEach((device) => {
+      const row = document.createElement('div');
+      row.className = 'device-row';
+      row.innerHTML = `<div><div class="device-name">${device.name}</div><div class="device-ip">${device.data.ip}</div></div>`;
+      row.addEventListener('click', () => addDevice(device));
+      list.appendChild(row);
+    });
+    if (!devices || devices.length === 0) {
+      list.innerHTML = '<p class="hint">No devices found automatically.</p>';
+    }
+  }
+
+  Homey.emit('list_devices', null)
+    .then(renderDevices)
+    .catch((err) => Homey.alert(err.message || err));
+
+  document.getElementById('connect-btn').addEventListener('click', () => {
+    const ip = document.getElementById('manual-ip').value.trim();
+    if (!ip) {
+      Homey.alert('Please enter an IP address');
+      return;
+    }
+    Homey.showLoadingOverlay();
+    Homey.emit('manual_pair', ip)
+      .then((device) => addDevice(device))
+      .catch((err) => {
+        Homey.hideLoadingOverlay();
+        Homey.alert(err.message || err);
+      });
+  });
+</script>

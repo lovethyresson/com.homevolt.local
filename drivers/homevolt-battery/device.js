@@ -535,8 +535,8 @@ updateCapabilities(data) {
 
       // Safeguard against missing properties
       const settings = {
-        wifi_ssid: system?.wifi_status?.ssid || "No SSID found", 
-        wifi_ip: system?.wifi_status?.ip || "Unknown",          
+        wifi_ssid: system?.wifi_status?.ssid || "No SSID found",
+        wifi_ip: system?.wifi_status?.ip || "Unknown",
         battery_packs: `${totalBatteryPacks || 0}`,
         rated_capacity: `${(totalRatedCapacity || 0) / 1000} kWh`,
         available_capacity: `${(totalAvailableCapacity || 0) / 1000} kWh`,
