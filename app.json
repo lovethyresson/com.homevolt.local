@@ -14,7 +14,7 @@
   },
   "version": "1.4.3",
   "sdk": 3,
-  "compatibility": ">=12.2.0",
+  "compatibility": ">=12.13.0",
   "author": {
     "name": "Love Thyresson",
     "email": "love@thyresson.se"
@@ -206,6 +206,7 @@
       {
         "id": "set_battery_control_mode",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Set battery control mode",
           "de": "Batteriesteuerungsmodus setzen",
@@ -487,6 +488,7 @@
       {
         "id": "force_charge",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Charge now",
           "de": "Jetzt laden",
@@ -535,6 +537,7 @@
       {
         "id": "force_discharge",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Discharge now",
           "de": "Jetzt entladen",
@@ -599,9 +602,45 @@
         "measure_temperature",
         "measure_frequency",
         "battery_status",
-        "battery_control_mode"
+        "battery_control_mode",
+        "target_power",
+        "target_power_mode"
       ],
       "capabilitiesOptions": {
+        "battery_control_mode": {
+          "uiComponent": null
+        },
+        "target_power": {
+          "min": -12000,
+          "max": 12000,
+          "step": 1
+        },
+        "target_power_mode": {
+          "values": [
+            {
+              "id": "homey",
+              "title": {
+                "en": "Homey",
+                "de": "Homey",
+                "es": "Homey",
+                "fr": "Homey",
+                "nl": "Homey",
+                "sv": "Homey"
+              }
+            },
+            {
+              "id": "partner",
+              "title": {
+                "en": "Partner controlled",
+                "de": "Partner-gesteuert",
+                "es": "Controlado por el socio",
+                "fr": "Contrôlé par le partenaire",
+                "nl": "Partner bestuurd",
+                "sv": "Partnerstyrd"
+              }
+            }
+          ]
+        },
         "meter_power.imported": {
           "title": {
             "en": "Imported Energy",

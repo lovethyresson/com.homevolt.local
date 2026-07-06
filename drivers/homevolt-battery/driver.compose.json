@@ -14,9 +14,45 @@
     "measure_temperature",
     "measure_frequency",
     "battery_status",
-    "battery_control_mode"
+    "battery_control_mode",
+    "target_power",
+    "target_power_mode"
   ],
   "capabilitiesOptions": {
+    "battery_control_mode": {
+      "uiComponent": null
+    },
+    "target_power": {
+      "min": -12000,
+      "max": 12000,
+      "step": 1
+    },
+    "target_power_mode": {
+      "values": [
+        {
+          "id": "homey",
+          "title": {
+            "en": "Homey",
+            "de": "Homey",
+            "es": "Homey",
+            "fr": "Homey",
+            "nl": "Homey",
+            "sv": "Homey"
+          }
+        },
+        {
+          "id": "partner",
+          "title": {
+            "en": "Partner controlled",
+            "de": "Partner-gesteuert",
+            "es": "Controlado por el socio",
+            "fr": "Contrôlé par le partenaire",
+            "nl": "Partner bestuurd",
+            "sv": "Partnerstyrd"
+          }
+        }
+      ]
+    },
     "meter_power.imported": {
       "title": {
         "en": "Imported Energy",

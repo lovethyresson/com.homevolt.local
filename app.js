@@ -3,6 +3,9 @@
 const Homey = require('homey');
 const fetch = require('node-fetch');
 
+// Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
+const DEBUG = process.env.DEBUG === '1';
+
 module.exports = class HomevoltApp extends Homey.App {
 
   __statusPromises = {};
@@ -44,34 +47,39 @@ module.exports = class HomevoltApp extends Homey.App {
    */
   async _fetchWithRetry(url, retries = 3, timeoutMs = 5000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
+      const startedAt = Date.now();
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  
+
+        if (DEBUG) this.log(`[fetch] GET ${url} (attempt ${attempt}/${retries})`);
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
-  
+
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
-  
+
         const text = await res.text(); // Get raw text first
         if (!text.trim()) {
           throw new Error(`Empty response from ${url}`);
         }
-  
+
         try {
-          return JSON.parse(text); // Safely parse JSON
+          const parsed = JSON.parse(text); // Safely parse JSON
+          if (DEBUG) this.log(`[fetch] GET ${url} ok after ${Date.now() - startedAt}ms`);
+          return parsed;
         } catch (jsonError) {
           throw new Error(`Invalid JSON from ${url}: ${jsonError.message}`);
         }
-  
+
       } catch (error) {
+        const elapsedMs = Date.now() - startedAt;
         if (attempt < retries) {
-          this.log(`Retrying (${attempt}/${retries}) due to error: ${error.message}`);
+          this.log(`Retrying (${attempt}/${retries}) due to error after ${elapsedMs}ms: ${error.message}`);
           await new Promise(res => setTimeout(res, 1000)); // Wait before retry
         } else {
-          this.error(`Failed to fetch ${url} after ${retries} attempts: ${error.message}`);
+          this.error(`Failed to fetch ${url} after ${retries} attempts (last failure after ${elapsedMs}ms): ${error.message}`);
           return null; // Return `null` instead of throwing to avoid unhandled rejections
         }
       }

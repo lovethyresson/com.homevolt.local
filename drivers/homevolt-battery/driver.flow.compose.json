@@ -23,6 +23,7 @@
       {
         "id": "set_battery_control_mode",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Set battery control mode",
           "de": "Batteriesteuerungsmodus setzen",
@@ -290,6 +291,7 @@
       {
         "id": "force_charge",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Charge now",
           "de": "Jetzt laden",
@@ -333,6 +335,7 @@
       {
         "id": "force_discharge",
         "scope": "device",
+        "deprecated": true,
         "title": {
           "en": "Discharge now",
           "de": "Jetzt entladen",
