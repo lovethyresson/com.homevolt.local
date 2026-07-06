@@ -27,6 +27,7 @@ class HomevoltSolarPanelDevice extends Device {
 
   async onInit() {
     this.log(`Initializing solar panel device: ${this.getName()}`);
+    this.log(`[homevolt-solar-panel] Native driver, class '${this.getClass()}' declared in manifest - no runtime overrides needed`);
 
     this.ip = this.getData().ip;
 

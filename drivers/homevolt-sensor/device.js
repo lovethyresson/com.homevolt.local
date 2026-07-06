@@ -35,7 +35,10 @@ class HomevoltSensorDevice extends Device {
     this.ip = this.getData().ip;
 
     if (this.type === 'solar') {
+      this.log('[homevolt-sensor] LEGACY solar device detected - applying patched solarpanel/energy overrides');
       await this.migrateLegacySolarDevice();
+    } else {
+      this.log(`[homevolt-sensor] Grid device, native class '${this.getClass()}' - no overrides applied`);
     }
 
     // Initial fetch (non-blocking)
@@ -59,12 +62,16 @@ class HomevoltSensorDevice extends Device {
    */
   async migrateLegacySolarDevice() {
     if (this.getClass() !== 'solarpanel') {
-      this.log(`Legacy solar sensor: upgrading device class from '${this.getClass()}' to 'solarpanel'`);
+      this.log(`[homevolt-sensor] LEGACY solar sensor: upgrading device class from '${this.getClass()}' to 'solarpanel'`);
       await this.setClass('solarpanel').catch(this.error);
+    } else {
+      this.log(`[homevolt-sensor] LEGACY solar sensor: class already 'solarpanel', patch previously applied`);
     }
     if (this.getEnergy()?.cumulative !== false) {
-      this.log('Legacy solar sensor: disabling cumulative energy flag');
+      this.log('[homevolt-sensor] LEGACY solar sensor: disabling cumulative energy flag');
       await this.setEnergy({ cumulative: false }).catch(this.error);
+    } else {
+      this.log('[homevolt-sensor] LEGACY solar sensor: cumulative flag already disabled, patch previously applied');
     }
   }
 
