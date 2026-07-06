@@ -85,5 +85,8 @@
   },
   "1.4.3": {
     "en": "Tweak for dual Homevolt setup (max charge limit 12kW)."
+  },
+  "1.5.0": {
+    "en": "Updated to use homey's latest native features for home batteries. Added manual IP pairing. Numerous bug fixes."
   }
 }
