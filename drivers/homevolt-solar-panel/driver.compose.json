@@ -1,8 +1,8 @@
 {
   "name": {
-    "en": "Homevolt grid sensor"
+    "en": "Homevolt solar panel"
   },
-  "class": "sensor",
+  "class": "solarpanel",
   "capabilities": [
     "measure_power",
     "measure_power.currentL1",
@@ -93,17 +93,12 @@
       "decimals": 2
     }
   },
-  "energy": {
-    "cumulative": true,
-    "cumulativeImportedCapability": "meter_power.imported",
-    "cumulativeExportedCapability": "meter_power.exported"
-  },
   "images": {
-    "xlarge": "/drivers/homevolt-sensor/assets/images/xlarge.png",
-    "large": "/drivers/homevolt-sensor/assets/images/large.png",
-    "small": "/drivers/homevolt-sensor/assets/images/small.png"
+    "xlarge": "/drivers/homevolt-solar-panel/assets/images/xlarge.png",
+    "large": "/drivers/homevolt-solar-panel/assets/images/large.png",
+    "small": "/drivers/homevolt-solar-panel/assets/images/small.png"
   },
-  "icon": "/drivers/homevolt-sensor/assets/icon.svg",
+  "icon": "/drivers/homevolt-solar-panel/assets/icon.svg",
   "platforms": [
     "local"
   ],

@@ -791,7 +791,7 @@
     },
     {
       "name": {
-        "en": "Homevolt sensors"
+        "en": "Homevolt grid sensor"
       },
       "class": "sensor",
       "capabilities": [
@@ -916,6 +916,129 @@
         }
       ],
       "id": "homevolt-sensor"
+    },
+    {
+      "name": {
+        "en": "Homevolt solar panel"
+      },
+      "class": "solarpanel",
+      "capabilities": [
+        "measure_power",
+        "measure_power.currentL1",
+        "measure_power.currentL2",
+        "measure_power.currentL3",
+        "meter_power.imported",
+        "meter_power.exported",
+        "measure_signal_strength"
+      ],
+      "capabilitiesOptions": {
+        "meter_power.imported": {
+          "title": {
+            "en": "Imported Energy",
+            "nl": "Geïmporteerde Energie",
+            "de": "Importierte Energie",
+            "fr": "Énergie Importée",
+            "es": "Energía Importada",
+            "sv": "Importerad Energi"
+          },
+          "decimals": 3
+        },
+        "meter_power.exported": {
+          "title": {
+            "en": "Exported Energy",
+            "nl": "Geëxporteerde Energie",
+            "de": "Exportierte Energie",
+            "fr": "Énergie Exportée",
+            "es": "Energía Exportada",
+            "sv": "Exporterad Energi"
+          },
+          "decimals": 3
+        },
+        "measure_power.currentL1": {
+          "title": {
+            "en": "Current L1",
+            "nl": "Stroom L1",
+            "de": "Strom L1",
+            "fr": "Courant L1",
+            "es": "Corriente L1",
+            "sv": "Ström L1"
+          },
+          "units": {
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
+          },
+          "decimals": 2
+        },
+        "measure_power.currentL2": {
+          "title": {
+            "en": "Current L2",
+            "nl": "Stroom L2",
+            "de": "Strom L2",
+            "fr": "Courant L2",
+            "es": "Corriente L2",
+            "sv": "Ström L2"
+          },
+          "units": {
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
+          },
+          "decimals": 2
+        },
+        "measure_power.currentL3": {
+          "title": {
+            "en": "Current L3",
+            "nl": "Stroom L3",
+            "de": "Strom L3",
+            "fr": "Courant L3",
+            "es": "Corriente L3",
+            "sv": "Ström L3"
+          },
+          "units": {
+            "en": "A",
+            "nl": "A",
+            "de": "A",
+            "fr": "A",
+            "es": "A",
+            "sv": "A"
+          },
+          "decimals": 2
+        }
+      },
+      "images": {
+        "xlarge": "/drivers/homevolt-solar-panel/assets/images/xlarge.png",
+        "large": "/drivers/homevolt-solar-panel/assets/images/large.png",
+        "small": "/drivers/homevolt-solar-panel/assets/images/small.png"
+      },
+      "icon": "/drivers/homevolt-solar-panel/assets/icon.svg",
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "discovery": "homevolt",
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "homevolt-solar-panel"
     }
   ],
   "capabilities": {

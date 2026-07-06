@@ -52,12 +52,23 @@
     {
       "id": "homevolt-sensor",
       "name": {
-        "en": "Homevolt sensor",
-        "nl": "Homevolt sensor",
-        "de": "Homevolt-Sensor",
-        "fr": "Capteur Homevolt",
-        "es": "Sensor Homevolt",
-        "sv": "Homevolt-sensor"
+        "en": "Homevolt grid sensor",
+        "nl": "Homevolt netsensor",
+        "de": "Homevolt-Netzsensor",
+        "fr": "Capteur réseau Homevolt",
+        "es": "Sensor de red Homevolt",
+        "sv": "Homevolt nätsensor"
+      }
+    },
+    {
+      "id": "homevolt-solar-panel",
+      "name": {
+        "en": "Homevolt solar panel",
+        "nl": "Homevolt zonnepaneel",
+        "de": "Homevolt-Solarpanel",
+        "fr": "Panneau solaire Homevolt",
+        "es": "Panel solar Homevolt",
+        "sv": "Homevolt solpanel"
       }
     }
   ]
