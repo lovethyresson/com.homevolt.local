@@ -22,6 +22,27 @@ class HomevoltBatteryDevice extends Device {
     }
   }
 
+  /**
+   * Total rated power across all EMS entries (watts), as reported by the
+   * device itself - reflects however many battery packs are actually
+   * installed, rather than assuming a fixed 6000W per pack.
+   */
+  computeRatedPowerWatts(data) {
+    const emsList = Array.isArray(data?.ems) ? data.ems : [];
+    return emsList.reduce((sum, ems) => sum + (ems?.ems_info?.rated_power || 0), 0);
+  }
+
+  /**
+   * Reject a requested charge/discharge power that exceeds this device's
+   * detected rated power. Skipped if rated power is unknown (0), since some
+   * firmware may not report it and we don't want to block all commands.
+   */
+  assertPowerWithinRatedLimit(power) {
+    if (this.ratedPowerWatts && power > this.ratedPowerWatts) {
+      throw new Error(`Requested power (${power}W) exceeds this battery's rated power (${this.ratedPowerWatts}W)`);
+    }
+  }
+
   onDiscoveryResult(discoveryResult) {
     // Return a truthy value here if the discovery result matches your device.
     return discoveryResult.id === this.getData().id;
@@ -94,6 +115,7 @@ class HomevoltBatteryDevice extends Device {
       this.homey.flow.getActionCard('charge_battery')
       .registerRunListener(async (args) => {
         const { power, start_date, end_date, start_time, end_time } = args;
+        this.assertPowerWithinRatedLimit(power);
         function formatDate(dateString) {
           const [day, month, year] = dateString.split('-');
           return `${year}-${month}-${day}`;
@@ -115,6 +137,7 @@ class HomevoltBatteryDevice extends Device {
       this.homey.flow.getActionCard('discharge_battery')
       .registerRunListener(async (args) => {
         const { power, start_date, end_date, start_time, end_time } = args;
+        this.assertPowerWithinRatedLimit(power);
         function formatDate(dateString) {
           const [day, month, year] = dateString.split('-');
           return `${year}-${month}-${day}`;
@@ -136,6 +159,7 @@ class HomevoltBatteryDevice extends Device {
       this.homey.flow.getActionCard('force_charge')
       .registerRunListener(async (args) => {
         const { power } = args;
+        this.assertPowerWithinRatedLimit(power);
         const command = `sched_set 1 -s ${power}`;
         try {
           await this.sendBatteryCommand(command);
@@ -151,6 +175,7 @@ class HomevoltBatteryDevice extends Device {
       this.homey.flow.getActionCard('force_discharge')
       .registerRunListener(async (args) => {
         const { power } = args;
+        this.assertPowerWithinRatedLimit(power);
         const command = `sched_set 2 -s ${power}`;
         try {
           await this.sendBatteryCommand(command);
@@ -281,6 +306,14 @@ async fetchData() {
 
 updateCapabilities(data) {
 
+  // Refresh on every poll so it self-corrects if a pack is added/removed.
+  // Only log on the initial detection or an actual change, not every poll.
+  const newRatedPowerWatts = this.computeRatedPowerWatts(data);
+  if (newRatedPowerWatts !== this.ratedPowerWatts) {
+    this.log(`Detected rated power: ${newRatedPowerWatts}W (used as the max for charge/discharge flow actions)`);
+    this.ratedPowerWatts = newRatedPowerWatts;
+  }
+
   // Parse data into useful data points and update capabilities
 
   const batteryImportedKWh = data.ems[0]?.ems_data?.energy_consumed / 1000;     // Accumulated imported energy, scale to kWh
@@ -370,7 +403,8 @@ updateCapabilities(data) {
       const totalAvailableCapacity = emsList.reduce((sum, ems) => sum + (ems?.ems_data?.avail_cap || 0), 0);
 
       // Rated power is per EMS (inverter/EMS), so sum across EMS entries
-      const totalRatedPower = emsList.reduce((sum, ems) => sum + (ems?.ems_info?.rated_power || 0), 0);
+      const totalRatedPower = this.computeRatedPowerWatts(data);
+      this.ratedPowerWatts = totalRatedPower;
 
       // Safeguard against missing properties
       const settings = {
