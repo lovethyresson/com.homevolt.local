@@ -5,6 +5,46 @@ const FormData = require('form-data');
 // Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
 const DEBUG = process.env.DEBUG === '1';
 
+/**
+ * The firmware's `sched_set`/`sched_add` <type> argument (see docs/console-help.md).
+ * Types 1/2 measure their setpoint at the inverter (i.e. battery power); types
+ * 3/4/5 measure it at the grid connection point instead, so the battery does
+ * whatever it takes to hold the meter at the requested value.
+ */
+const SCHEDULE_TYPE = {
+  IDLE: 0,
+  INV_CHARGE: 1,
+  INV_DISCHARGE: 2,
+  GRID_CHARGE: 3,
+  GRID_DISCHARGE: 4,
+  GRID_CHARGE_DISCHARGE: 5,
+};
+
+/**
+ * Convert a Homey flow-card date arg (DD-MM-YYYY) and time arg (HH:mm) into the
+ * timestamp format the firmware's --from/--to flags expect (YYYY-MM-DDTHH:mm:ss).
+ */
+function toScheduleTimestamp(dateString, timeString) {
+  const [day, month, year] = dateString.split('-');
+  return `${year}-${month}-${day}T${timeString}:00`;
+}
+
+/**
+ * Assemble a `sched_set`/`sched_add` command line. Only flags this firmware
+ * actually accepts are emitted - docs/console-help.md is the reference for the
+ * full set. (An earlier version of this app sent `--cond_type=1`, an option
+ * `sched_add` has never had; the console answers unknown options with "invalid
+ * option", which sendBatteryCommand() turns into a thrown error - so those
+ * cards were failing outright.)
+ */
+function buildScheduleCommand(verb, type, { setpoint, from, to } = {}) {
+  const parts = [verb, String(type)];
+  if (setpoint !== undefined && setpoint !== null) parts.push(`-s ${setpoint}`);
+  if (from) parts.push(`--from=${from}`);
+  if (to) parts.push(`--to=${to}`);
+  return parts.join(' ');
+}
+
 class HomevoltBatteryDevice extends Device {
 
   /**
@@ -124,12 +164,42 @@ class HomevoltBatteryDevice extends Device {
   async applyTargetPower(power) {
     this.assertPowerWithinRatedLimit(Math.abs(power));
     const command = power > 0
-      ? `sched_set 1 -s ${power}`
+      ? buildScheduleCommand('sched_set', SCHEDULE_TYPE.INV_CHARGE, { setpoint: power })
       : power < 0
-        ? `sched_set 2 -s ${Math.abs(power)}`
-        : 'sched_set 0';
+        ? buildScheduleCommand('sched_set', SCHEDULE_TYPE.INV_DISCHARGE, { setpoint: Math.abs(power) })
+        : buildScheduleCommand('sched_set', SCHEDULE_TYPE.IDLE);
     await this.sendBatteryCommand(command);
     this.log(`Applied target_power=${power}W via '${command}'`);
+  }
+
+  /**
+   * Send a grid-referenced setpoint (schedule types 3/4/5) to the firmware.
+   *
+   * The grid-side sibling of applyTargetPower(), with the same one-shot
+   * override semantics: like that method it deliberately does NOT touch
+   * target_power_mode/settings_local, because these are mode-agnostic
+   * overrides rather than a persistent hand-off of control to Homey.
+   *
+   * assertPowerWithinRatedLimit() deliberately does NOT apply here. That check
+   * compares against the battery's own rated power, but a grid setpoint is a
+   * target at the meter, not battery output - a house pulling 18kW is a
+   * perfectly legitimate grid target on a 12kW battery, and a negative setpoint
+   * would pass the check vacuously anyway. The flow cards' own min/max bound
+   * the value instead.
+   *
+   * @param {number} type - one of SCHEDULE_TYPE.GRID_*
+   * @param {number} watts - setpoint at the grid connection point. For
+   *   GRID_CHARGE_DISCHARGE: positive = import from grid, negative = export to
+   *   grid, 0 = hold the connection at zero (self-consumption).
+   * @param {{from?: string, to?: string}} [window] - optional time window. When
+   *   given the setpoint is appended with `sched_add`; without it, `sched_set`
+   *   replaces the current schedule so the change takes effect immediately.
+   */
+  async applyGridSetpoint(type, watts, window = {}) {
+    const verb = (window.from || window.to) ? 'sched_add' : 'sched_set';
+    const command = buildScheduleCommand(verb, type, { setpoint: watts, from: window.from, to: window.to });
+    await this.sendBatteryCommand(command);
+    this.log(`Applied grid setpoint ${watts}W (type ${type}) via '${command}'`);
   }
 
   onDiscoveryResult(discoveryResult) {
@@ -210,14 +280,12 @@ class HomevoltBatteryDevice extends Device {
         const device = args.device;
         const { power, start_date, end_date, start_time, end_time } = args;
         device.assertPowerWithinRatedLimit(power);
-        function formatDate(dateString) {
-          const [day, month, year] = dateString.split('-');
-          return `${year}-${month}-${day}`;
-        }
-        const from = `${formatDate(start_date)}T${start_time}:00`;
-        const to = `${formatDate(end_date)}T${end_time}:00`;
 
-        const command = `sched_add 1 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+        const command = buildScheduleCommand('sched_add', SCHEDULE_TYPE.INV_CHARGE, {
+          setpoint: power,
+          from: toScheduleTimestamp(start_date, start_time),
+          to: toScheduleTimestamp(end_date, end_time),
+        });
         try {
           await device.sendBatteryCommand(command);
           device.log(`Schedule set for charging: ${command}`);
@@ -233,14 +301,12 @@ class HomevoltBatteryDevice extends Device {
         const device = args.device;
         const { power, start_date, end_date, start_time, end_time } = args;
         device.assertPowerWithinRatedLimit(power);
-        function formatDate(dateString) {
-          const [day, month, year] = dateString.split('-');
-          return `${year}-${month}-${day}`;
-        }
-        const from = `${formatDate(start_date)}T${start_time}:00`;
-        const to = `${formatDate(end_date)}T${end_time}:00`;
 
-        const command = `sched_add 2 --cond_type=1 --setpoint=${power} --from=${from} --to=${to}`;
+        const command = buildScheduleCommand('sched_add', SCHEDULE_TYPE.INV_DISCHARGE, {
+          setpoint: power,
+          from: toScheduleTimestamp(start_date, start_time),
+          to: toScheduleTimestamp(end_date, end_time),
+        });
         try {
           await device.sendBatteryCommand(command);
           device.log(`Schedule set for discharging: ${command}`);
@@ -249,6 +315,44 @@ class HomevoltBatteryDevice extends Device {
           throw new Error(err.message);
         }
       });
+
+      // Grid-referenced actions (schedule types 3/4/5). Unlike the cards above,
+      // the setpoint here is measured at the grid connection point rather than
+      // at the inverter, so the battery does whatever it takes to hold the
+      // *meter* at the requested value. The '..._now' cards replace the current
+      // schedule (sched_set) for immediate effect; the 'plan_...' cards append a
+      // window (sched_add) alongside whatever else is scheduled.
+      //
+      // Registered from a table since the six differ only in schedule type and
+      // whether they carry a time window.
+      const gridCards = [
+        { id: 'grid_charge_now', type: SCHEDULE_TYPE.GRID_CHARGE, scheduled: false },
+        { id: 'grid_discharge_now', type: SCHEDULE_TYPE.GRID_DISCHARGE, scheduled: false },
+        { id: 'grid_setpoint_now', type: SCHEDULE_TYPE.GRID_CHARGE_DISCHARGE, scheduled: false },
+        { id: 'plan_grid_charge', type: SCHEDULE_TYPE.GRID_CHARGE, scheduled: true },
+        { id: 'plan_grid_discharge', type: SCHEDULE_TYPE.GRID_DISCHARGE, scheduled: true },
+        { id: 'plan_grid_setpoint', type: SCHEDULE_TYPE.GRID_CHARGE_DISCHARGE, scheduled: true },
+      ];
+
+      for (const { id, type, scheduled } of gridCards) {
+        this.homey.flow.getActionCard(id)
+        .registerRunListener(async (args) => {
+          const device = args.device;
+          const window = scheduled
+            ? {
+              from: toScheduleTimestamp(args.start_date, args.start_time),
+              to: toScheduleTimestamp(args.end_date, args.end_time),
+            }
+            : {};
+          try {
+            await device.applyGridSetpoint(type, args.power, window);
+            return true;
+          } catch (err) {
+            device.error(`Failed to run '${id}':`, err);
+            throw new Error(err.message);
+          }
+        });
+      }
 
       // Deprecated: superseded by Homey's native target_power for new Flows.
       // Deliberately calls applyTargetPower() directly rather than switching
@@ -560,9 +664,13 @@ updateCapabilities(data) {
       return false;
     }
     // Try a few firmware variants; don't throw from here so device init never fails
+    // 'param_dump' used to sit in the middle of this chain, but no firmware has
+    // ever had that command - 'param_list' is the one that dumps key/value
+    // pairs (see docs/console-help.md), and its output already matches the
+    // "settings_local <true|false>" pattern below.
     const commands = [
       'param_get settings_local', // newest firmware
-      'param_dump',               // older firmware
+      'param_list',               // older firmware: dumps all key/value pairs
       'help'                      // last resort: might list current settings inline
     ];
 
@@ -594,7 +702,9 @@ updateCapabilities(data) {
           return true;
         }
 
-        // If 'help' returns something that clearly shows settings_local=true/false inline
+        // If 'help' returns something that clearly shows settings_local=true/false inline.
+        // The 2026-08-11 firmware capture in docs/console-help.md contains no such line,
+        // so this is purely a speculative fallback for firmware we haven't seen.
         if (cmd === 'help') {
           const helpMatch = text.match(/settings_local\s*=\s*(true|false)/i);
           if (helpMatch) {

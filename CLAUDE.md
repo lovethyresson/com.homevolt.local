@@ -6,9 +6,17 @@ The battery exposes a local, unauthenticated console over HTTP at
 This is an unsanctioned/reverse-engineered API (see [README.md](README.md)) — there is no
 public spec, so this file is the only record of which commands/params exist and what they mean.
 
-Full `help` output was captured from a real unit on 2026-07-06 (ecu-hub-esp32 firmware).
-Only the commands relevant to this app are summarized below; the ESP32 console also exposes a
-large number of unrelated system/diagnostic commands (wifi, LTE, OTA, coredump, etc.) not used here.
+Full `help` output was captured verbatim from a real unit on 2026-08-11 (ecu-hub-esp32 firmware)
+and is stored in **[docs/console-help.md](docs/console-help.md)** — that file is the authoritative
+reference for which commands and flags exist. Only the parts relevant to this app are summarized
+below; the ESP32 console also exposes a large number of unrelated system/diagnostic commands
+(wifi, LTE, OTA, coredump, Modbus, heap tracing, etc.) not used here.
+
+Anything not present in that capture should be assumed not to exist. Two commands this app used to
+send were fixed after the capture proved they were never valid: `sched_add --cond_type=...` (no such
+option) and `param_dump` (no such command — it is `param_list`). Because `sendBatteryCommand()`
+throws on any response containing "invalid" or "error", an unknown flag is a hard failure, not a
+silently ignored one.
 
 ## Debug logging convention
 
@@ -34,8 +42,10 @@ and worth seeing even on a live install.
     `settings_local=true` as two separate app-level modes ("local schedules" vs. "Homey
     controlled"), reasoning that "local" was more resilient if Homey went offline — that reasoning
     was wrong (see "Control-mode capabilities" below) and the distinction was dropped.
-- `param_dump` / `help` — fallback ways to read current param state on older firmware that
-  doesn't support `param_get` directly (see `syncBatteryControlMode()`).
+- `param_list [-dn]` / `help` — fallback ways to read current param state on older firmware that
+  doesn't support `param_get` directly (see `syncBatteryControlMode()`). `param_list` dumps
+  key/value pairs, so the same `settings_local <true|false>` parse works on both. (`param_dump`
+  was in this chain historically; no firmware has ever had that command.)
 
 ## Scheduling / setpoint commands
 
@@ -50,6 +60,58 @@ and worth seeing even on a live install.
   - Force charge uses type `1` (`sched_set 1 -s <watts>`).
   - Force discharge uses type `2` (`sched_set 2 -s <watts>`).
   - Idle/stop is its own dedicated type `0` (`sched_set 0`) — **not** `sched_set 1 -s 0`.
+
+### Where the setpoint is measured (inverter vs. grid)
+
+This is the one thing the type numbers encode that isn't obvious: types `1`/`2` measure `-s` at the
+**inverter** (i.e. battery power), while types `3`/`4`/`5` measure it at the **grid connection
+point**. With a grid type the battery continuously adjusts its own output so that the *meter* reads
+the requested value — so e.g. `sched_set 4 -s 0` means "cover the house load exactly, import
+nothing", and the actual battery power varies with load.
+
+Consequences, both encoded in `applyGridSetpoint()`:
+
+- `assertPowerWithinRatedLimit()` must **not** be applied to grid setpoints. It bounds against the
+  battery's rated power, but a grid target is a target at the meter — an 18 kW house draw is a
+  legitimate grid setpoint on a 12 kW battery, and a negative setpoint would pass it vacuously.
+  The flow cards' own `min`/`max` (±30000 W) are the only bound.
+- Type `5` is bidirectional, so its setpoint is signed: positive = import from grid, negative =
+  export to grid, `0` = hold the connection at zero (self-consumption). The `-i/--idle_threshold_power`
+  and `-r/--discharge_threshold_power` flags exist to give it a deadband; this app doesn't set them.
+
+  **Verified on a real unit, 2026-08-11.** `sched_set 5 -s -3000` was accepted and `sched_list`
+  echoed it back unchanged, so the firmware genuinely takes a signed setpoint here:
+
+  ```
+  id: 0, type: Grid charge/discharge setpoint, from: 2026-08-11T21:48:27, to: <unset>,
+  setpoint:-3000, max_charge: <max allowed>, max_discharge: <max allowed>
+  ```
+
+  Two incidental facts from that output: `sched_set` stamps `from` to the moment it ran and leaves
+  `to` unset (so the entry runs indefinitely until replaced or idled), and `max_charge` /
+  `max_discharge` default to `<max allowed>` when `-c` / `-d` aren't passed.
+
+### Flags accepted by `sched_add` / `sched_set`
+
+Both take the exact same flag set. The full list is in [docs/console-help.md](docs/console-help.md);
+these are the ones that matter here:
+
+| Flag | Meaning | Used by this app |
+|---|---|---|
+| `-s`, `--setpoint` | Power setpoint (W), frame depends on `<type>` | yes — every power card |
+| `--from`, `--to` | Window bounds, `YYYY-MM-DDTHH:mm:ss` | yes — the `plan_*`/`charge_battery` cards |
+| `--min`, `--max` | Min/max SoC for the entry | no |
+| `-c`, `--max_charge` / `-d`, `--max_discharge` | Clamp battery power inside a grid-mode entry | no — candidate for bounding the battery side of grid setpoints |
+| `-l`, `--import_limit` / `-x`, `--export_limit` | Hard grid import/export limits | no |
+| `--main_fuse` | Main fuse size in **mA** | no |
+| `--charge_ramp_up` / `--discharge_ramp_up` | Ramp rate in mA/s | no |
+| `--import_energy_limit*` / `--export_energy_limit*` | Energy (Wh) budgets with their own from/to windows and max compensation power | no |
+| `-n`/`-u`/`-w`/`-f`, `--fcr_*`, `--ffr_*`, `-t`, `-e`, `-a`, `-m` | Frequency-reserve (FCR-N / FCR-D / FFR) params and test sequences, for type `6` | no |
+| `-o`, `--offline` | Take the inverter offline during idle | no |
+
+Command lines are assembled by `buildScheduleCommand(verb, type, { setpoint, from, to })` in
+device.js — the single place that knows the flag spelling. Add new flags there rather than
+string-building in a flow card listener.
 
 ## Control-mode capabilities (target_power_mode / battery_control_mode)
 
@@ -159,6 +221,28 @@ thing shared with the new capability is the `sched_set`-building logic in `apply
 `charge_battery`/`discharge_battery` (scheduled, with a from/to time window via `sched_add`) are
 **not** deprecated — Homey's `target_power` has no time-window concept, so there's no native
 equivalent to point people at.
+
+### Grid-relative actions
+
+Six cards drive schedule types `3`/`4`/`5`, where the setpoint is measured at the grid connection
+point (see "Where the setpoint is measured" above). None of them are deprecated and none have a
+Homey-native equivalent — `target_power` is inverter-referenced by definition.
+
+| Card | Command |
+|---|---|
+| `grid_charge_now` | `sched_set 3 -s <W>` |
+| `grid_discharge_now` | `sched_set 4 -s <W>` |
+| `grid_setpoint_now` | `sched_set 5 -s <signed W>` |
+| `plan_grid_charge` | `sched_add 3 -s <W> --from=… --to=…` |
+| `plan_grid_discharge` | `sched_add 4 -s <W> --from=… --to=…` |
+| `plan_grid_setpoint` | `sched_add 5 -s <signed W> --from=… --to=…` |
+
+All six are registered from a single table in `onInit()` and route through
+`applyGridSetpoint(type, watts, window)`, which — exactly like `applyTargetPower()`, and for the
+same reason — deliberately does **not** touch `target_power_mode`/`settings_local`. They are
+one-shot overrides, not a persistent hand-off of control to Homey. The `_now` variants use
+`sched_set` (replacing the current schedule, so it takes effect immediately); the `plan_` variants
+use `sched_add` (appending alongside whatever else is scheduled).
 
 ## Other useful params
 

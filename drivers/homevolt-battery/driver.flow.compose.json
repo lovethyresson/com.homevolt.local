@@ -286,8 +286,475 @@
             }
           }
         ]
-      }
-    ,
+      },
+      {
+        "id": "grid_charge_now",
+        "scope": "device",
+        "title": {
+          "en": "Charge from grid now",
+          "de": "Jetzt aus dem Netz laden",
+          "es": "Cargar desde la red ahora",
+          "fr": "Charger depuis le réseau maintenant",
+          "nl": "Nu opladen vanaf het net",
+          "sv": "Ladda från nätet nu"
+        },
+        "titleFormatted": {
+          "en": "Charge from grid now at [[power]]W",
+          "de": "Jetzt aus dem Netz laden mit [[power]]W",
+          "es": "Cargar desde la red ahora con [[power]]W",
+          "fr": "Charger depuis le réseau maintenant à [[power]]W",
+          "nl": "Nu opladen vanaf het net met [[power]]W",
+          "sv": "Ladda från nätet nu med [[power]]W"
+        },
+        "hint": {
+          "en": "Charge immediately, with the power measured at the grid connection point instead of at the inverter: the battery adjusts itself so that grid import matches the given value.",
+          "de": "Sofort laden, wobei die Leistung am Netzanschlusspunkt statt am Wechselrichter gemessen wird: Die Batterie regelt so, dass der Netzbezug dem angegebenen Wert entspricht.",
+          "es": "Cargar inmediatamente, midiendo la potencia en el punto de conexión a la red en lugar del inversor: la batería se ajusta para que la importación de red coincida con el valor indicado.",
+          "fr": "Charger immédiatement, la puissance étant mesurée au point de raccordement au réseau plutôt qu'à l'onduleur : la batterie s'ajuste pour que le soutirage réseau corresponde à la valeur indiquée.",
+          "nl": "Direct opladen, waarbij het vermogen op het netaansluitpunt wordt gemeten in plaats van bij de omvormer: de batterij regelt zo dat de netafname gelijk is aan de opgegeven waarde.",
+          "sv": "Ladda omedelbart, med effekten mätt vid nätanslutningspunkten i stället för vid växelriktaren: batteriet reglerar så att nätuttaget motsvarar det angivna värdet."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power",
+              "de": "Netzleistung",
+              "es": "Potencia de red",
+              "fr": "Puissance réseau",
+              "nl": "Netvermogen",
+              "sv": "Näteffekt"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 0,
+            "max": 30000,
+            "step": 1
+          }
+        ]
+      },
+      {
+        "id": "grid_discharge_now",
+        "scope": "device",
+        "title": {
+          "en": "Discharge to grid now",
+          "de": "Jetzt ins Netz entladen",
+          "es": "Descargar a la red ahora",
+          "fr": "Décharger vers le réseau maintenant",
+          "nl": "Nu ontladen naar het net",
+          "sv": "Ladda ur till nätet nu"
+        },
+        "titleFormatted": {
+          "en": "Discharge to grid now at [[power]]W",
+          "de": "Jetzt ins Netz entladen mit [[power]]W",
+          "es": "Descargar a la red ahora con [[power]]W",
+          "fr": "Décharger vers le réseau maintenant à [[power]]W",
+          "nl": "Nu ontladen naar het net met [[power]]W",
+          "sv": "Ladda ur till nätet nu med [[power]]W"
+        },
+        "hint": {
+          "en": "Discharge immediately, with the power measured at the grid connection point instead of at the inverter: the battery adjusts itself so that grid export matches the given value.",
+          "de": "Sofort entladen, wobei die Leistung am Netzanschlusspunkt statt am Wechselrichter gemessen wird: Die Batterie regelt so, dass die Netzeinspeisung dem angegebenen Wert entspricht.",
+          "es": "Descargar inmediatamente, midiendo la potencia en el punto de conexión a la red en lugar del inversor: la batería se ajusta para que la exportación a la red coincida con el valor indicado.",
+          "fr": "Décharger immédiatement, la puissance étant mesurée au point de raccordement au réseau plutôt qu'à l'onduleur : la batterie s'ajuste pour que l'injection réseau corresponde à la valeur indiquée.",
+          "nl": "Direct ontladen, waarbij het vermogen op het netaansluitpunt wordt gemeten in plaats van bij de omvormer: de batterij regelt zo dat de teruglevering gelijk is aan de opgegeven waarde.",
+          "sv": "Ladda ur omedelbart, med effekten mätt vid nätanslutningspunkten i stället för vid växelriktaren: batteriet reglerar så att inmatningen till nätet motsvarar det angivna värdet."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power",
+              "de": "Netzleistung",
+              "es": "Potencia de red",
+              "fr": "Puissance réseau",
+              "nl": "Netvermogen",
+              "sv": "Näteffekt"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 0,
+            "max": 30000,
+            "step": 1
+          }
+        ]
+      },
+      {
+        "id": "grid_setpoint_now",
+        "scope": "device",
+        "title": {
+          "en": "Hold grid connection",
+          "de": "Netzanschluss halten",
+          "es": "Mantener la conexión de red",
+          "fr": "Maintenir le raccordement réseau",
+          "nl": "Netaansluiting vasthouden",
+          "sv": "Håll nätanslutningen"
+        },
+        "titleFormatted": {
+          "en": "Hold grid connection at [[power]]W",
+          "de": "Netzanschluss auf [[power]]W halten",
+          "es": "Mantener la conexión de red en [[power]]W",
+          "fr": "Maintenir le raccordement réseau à [[power]]W",
+          "nl": "Netaansluiting op [[power]]W houden",
+          "sv": "Håll nätanslutningen på [[power]]W"
+        },
+        "hint": {
+          "en": "Charge or discharge as needed to hold the grid connection at the given power. Positive = import from the grid, negative = export to the grid, 0 = neither (self-consumption).",
+          "de": "Nach Bedarf laden oder entladen, um den Netzanschluss auf der angegebenen Leistung zu halten. Positiv = Netzbezug, negativ = Netzeinspeisung, 0 = weder noch (Eigenverbrauch).",
+          "es": "Cargar o descargar según sea necesario para mantener la conexión de red en la potencia indicada. Positivo = importar de la red, negativo = exportar a la red, 0 = ninguno (autoconsumo).",
+          "fr": "Charger ou décharger selon les besoins pour maintenir le raccordement réseau à la puissance indiquée. Positif = soutirage réseau, négatif = injection réseau, 0 = ni l'un ni l'autre (autoconsommation).",
+          "nl": "Naar behoefte opladen of ontladen om de netaansluiting op het opgegeven vermogen te houden. Positief = afname van het net, negatief = teruglevering aan het net, 0 = geen van beide (zelfconsumptie).",
+          "sv": "Ladda eller ladda ur efter behov för att hålla nätanslutningen på angiven effekt. Positivt = uttag från nätet, negativt = inmatning till nätet, 0 = varken eller (egenförbrukning)."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power (+ import / − export)",
+              "de": "Netzleistung (+ Bezug / − Einspeisung)",
+              "es": "Potencia de red (+ importar / − exportar)",
+              "fr": "Puissance réseau (+ soutirage / − injection)",
+              "nl": "Netvermogen (+ afname / − teruglevering)",
+              "sv": "Näteffekt (+ uttag / − inmatning)"
+            },
+            "placeholder": {
+              "en": "0"
+            },
+            "min": -30000,
+            "max": 30000,
+            "step": 1
+          }
+        ]
+      },
+      {
+        "id": "plan_grid_charge",
+        "scope": "device",
+        "title": {
+          "en": "Plan grid charging",
+          "de": "Netzladung planen",
+          "es": "Planificar carga desde la red",
+          "fr": "Planifier la charge depuis le réseau",
+          "nl": "Netladen plannen",
+          "sv": "Planera laddning från nätet"
+        },
+        "titleFormatted": {
+          "en": "Plan grid charging: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
+          "de": "Netzladung planen: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
+          "es": "Planificar carga desde la red: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
+          "fr": "Planifier la charge depuis le réseau : [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
+          "nl": "Netladen plannen: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
+          "sv": "Planera laddning från nätet: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
+        },
+        "hint": {
+          "en": "Plan charging over a time window, with the power measured at the grid connection point instead of at the inverter.",
+          "de": "Ladevorgang für einen Zeitraum planen, wobei die Leistung am Netzanschlusspunkt statt am Wechselrichter gemessen wird.",
+          "es": "Planificar la carga durante un intervalo de tiempo, midiendo la potencia en el punto de conexión a la red en lugar del inversor.",
+          "fr": "Planifier la charge sur une plage horaire, la puissance étant mesurée au point de raccordement au réseau plutôt qu'à l'onduleur.",
+          "nl": "Opladen plannen over een tijdvenster, waarbij het vermogen op het netaansluitpunt wordt gemeten in plaats van bij de omvormer.",
+          "sv": "Planera laddning under ett tidsfönster, med effekten mätt vid nätanslutningspunkten i stället för vid växelriktaren."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power",
+              "de": "Netzleistung",
+              "es": "Potencia de red",
+              "fr": "Puissance réseau",
+              "nl": "Netvermogen",
+              "sv": "Näteffekt"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 0,
+            "max": 30000,
+            "step": 1
+          },
+          {
+            "type": "date",
+            "name": "start_date",
+            "title": {
+              "en": "Start date",
+              "de": "Startdatum",
+              "es": "Fecha de inicio",
+              "fr": "Date de début",
+              "nl": "Startdatum",
+              "sv": "Startdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "date",
+            "name": "end_date",
+            "title": {
+              "en": "End date",
+              "de": "Enddatum",
+              "es": "Fecha de fin",
+              "fr": "Date de fin",
+              "nl": "Einddatum",
+              "sv": "Slutdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "time",
+            "name": "start_time",
+            "title": {
+              "en": "Start time",
+              "de": "Startzeit",
+              "es": "Hora de inicio",
+              "fr": "Heure de début",
+              "nl": "Starttijd",
+              "sv": "Starttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          },
+          {
+            "type": "time",
+            "name": "end_time",
+            "title": {
+              "en": "End time",
+              "de": "Endzeit",
+              "es": "Hora de fin",
+              "fr": "Heure de fin",
+              "nl": "Eindtijd",
+              "sv": "Sluttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          }
+        ]
+      },
+      {
+        "id": "plan_grid_discharge",
+        "scope": "device",
+        "title": {
+          "en": "Plan grid discharging",
+          "de": "Netzentladung planen",
+          "es": "Planificar descarga a la red",
+          "fr": "Planifier la décharge vers le réseau",
+          "nl": "Netontladen plannen",
+          "sv": "Planera urladdning till nätet"
+        },
+        "titleFormatted": {
+          "en": "Plan grid discharging: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
+          "de": "Netzentladung planen: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
+          "es": "Planificar descarga a la red: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
+          "fr": "Planifier la décharge vers le réseau : [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
+          "nl": "Netontladen plannen: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
+          "sv": "Planera urladdning till nätet: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
+        },
+        "hint": {
+          "en": "Plan discharging over a time window, with the power measured at the grid connection point instead of at the inverter.",
+          "de": "Entladevorgang für einen Zeitraum planen, wobei die Leistung am Netzanschlusspunkt statt am Wechselrichter gemessen wird.",
+          "es": "Planificar la descarga durante un intervalo de tiempo, midiendo la potencia en el punto de conexión a la red en lugar del inversor.",
+          "fr": "Planifier la décharge sur une plage horaire, la puissance étant mesurée au point de raccordement au réseau plutôt qu'à l'onduleur.",
+          "nl": "Ontladen plannen over een tijdvenster, waarbij het vermogen op het netaansluitpunt wordt gemeten in plaats van bij de omvormer.",
+          "sv": "Planera urladdning under ett tidsfönster, med effekten mätt vid nätanslutningspunkten i stället för vid växelriktaren."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power",
+              "de": "Netzleistung",
+              "es": "Potencia de red",
+              "fr": "Puissance réseau",
+              "nl": "Netvermogen",
+              "sv": "Näteffekt"
+            },
+            "placeholder": {
+              "en": "6000"
+            },
+            "min": 0,
+            "max": 30000,
+            "step": 1
+          },
+          {
+            "type": "date",
+            "name": "start_date",
+            "title": {
+              "en": "Start date",
+              "de": "Startdatum",
+              "es": "Fecha de inicio",
+              "fr": "Date de début",
+              "nl": "Startdatum",
+              "sv": "Startdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "date",
+            "name": "end_date",
+            "title": {
+              "en": "End date",
+              "de": "Enddatum",
+              "es": "Fecha de fin",
+              "fr": "Date de fin",
+              "nl": "Einddatum",
+              "sv": "Slutdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "time",
+            "name": "start_time",
+            "title": {
+              "en": "Start time",
+              "de": "Startzeit",
+              "es": "Hora de inicio",
+              "fr": "Heure de début",
+              "nl": "Starttijd",
+              "sv": "Starttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          },
+          {
+            "type": "time",
+            "name": "end_time",
+            "title": {
+              "en": "End time",
+              "de": "Endzeit",
+              "es": "Hora de fin",
+              "fr": "Heure de fin",
+              "nl": "Eindtijd",
+              "sv": "Sluttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          }
+        ]
+      },
+      {
+        "id": "plan_grid_setpoint",
+        "scope": "device",
+        "title": {
+          "en": "Plan grid setpoint",
+          "de": "Netz-Sollwert planen",
+          "es": "Planificar consigna de red",
+          "fr": "Planifier la consigne réseau",
+          "nl": "Netsetpoint plannen",
+          "sv": "Planera nätbörvärde"
+        },
+        "titleFormatted": {
+          "en": "Plan grid setpoint: [[power]]W from [[start_date]] [[start_time]] to [[end_date]] [[end_time]]",
+          "de": "Netz-Sollwert planen: [[power]]W von [[start_date]] [[start_time]] bis [[end_date]] [[end_time]]",
+          "es": "Planificar consigna de red: [[power]]W de [[start_date]] [[start_time]] a [[end_date]] [[end_time]]",
+          "fr": "Planifier la consigne réseau : [[power]]W de [[start_date]] [[start_time]] à [[end_date]] [[end_time]]",
+          "nl": "Netsetpoint plannen: [[power]]W van [[start_date]] [[start_time]] tot [[end_date]] [[end_time]]",
+          "sv": "Planera nätbörvärde: [[power]]W från [[start_date]] [[start_time]] till [[end_date]] [[end_time]]"
+        },
+        "hint": {
+          "en": "Plan a time window in which the battery charges or discharges as needed to hold the grid connection at the given power. Positive = import from the grid, negative = export to the grid, 0 = neither (self-consumption).",
+          "de": "Einen Zeitraum planen, in dem die Batterie nach Bedarf lädt oder entlädt, um den Netzanschluss auf der angegebenen Leistung zu halten. Positiv = Netzbezug, negativ = Netzeinspeisung, 0 = weder noch (Eigenverbrauch).",
+          "es": "Planificar un intervalo de tiempo en el que la batería carga o descarga según sea necesario para mantener la conexión de red en la potencia indicada. Positivo = importar de la red, negativo = exportar a la red, 0 = ninguno (autoconsumo).",
+          "fr": "Planifier une plage horaire pendant laquelle la batterie charge ou décharge selon les besoins pour maintenir le raccordement réseau à la puissance indiquée. Positif = soutirage réseau, négatif = injection réseau, 0 = ni l'un ni l'autre (autoconsommation).",
+          "nl": "Een tijdvenster plannen waarin de batterij naar behoefte oplaadt of ontlaadt om de netaansluiting op het opgegeven vermogen te houden. Positief = afname van het net, negatief = teruglevering aan het net, 0 = geen van beide (zelfconsumptie).",
+          "sv": "Planera ett tidsfönster där batteriet laddar eller laddar ur efter behov för att hålla nätanslutningen på angiven effekt. Positivt = uttag från nätet, negativt = inmatning till nätet, 0 = varken eller (egenförbrukning)."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Grid power (+ import / − export)",
+              "de": "Netzleistung (+ Bezug / − Einspeisung)",
+              "es": "Potencia de red (+ importar / − exportar)",
+              "fr": "Puissance réseau (+ soutirage / − injection)",
+              "nl": "Netvermogen (+ afname / − teruglevering)",
+              "sv": "Näteffekt (+ uttag / − inmatning)"
+            },
+            "placeholder": {
+              "en": "0"
+            },
+            "min": -30000,
+            "max": 30000,
+            "step": 1
+          },
+          {
+            "type": "date",
+            "name": "start_date",
+            "title": {
+              "en": "Start date",
+              "de": "Startdatum",
+              "es": "Fecha de inicio",
+              "fr": "Date de début",
+              "nl": "Startdatum",
+              "sv": "Startdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "date",
+            "name": "end_date",
+            "title": {
+              "en": "End date",
+              "de": "Enddatum",
+              "es": "Fecha de fin",
+              "fr": "Date de fin",
+              "nl": "Einddatum",
+              "sv": "Slutdatum"
+            },
+            "placeholder": {
+              "en": "2025-01-01"
+            }
+          },
+          {
+            "type": "time",
+            "name": "start_time",
+            "title": {
+              "en": "Start time",
+              "de": "Startzeit",
+              "es": "Hora de inicio",
+              "fr": "Heure de début",
+              "nl": "Starttijd",
+              "sv": "Starttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          },
+          {
+            "type": "time",
+            "name": "end_time",
+            "title": {
+              "en": "End time",
+              "de": "Endzeit",
+              "es": "Hora de fin",
+              "fr": "Heure de fin",
+              "nl": "Eindtijd",
+              "sv": "Sluttid"
+            },
+            "placeholder": {
+              "en": "13:37"
+            }
+          }
+        ]
+      },
       {
         "id": "force_charge",
         "scope": "device",

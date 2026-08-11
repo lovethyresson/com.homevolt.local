@@ -88,5 +88,8 @@
   },
   "1.5.0": {
     "en": "Updated to use homey's latest native features for home batteries. Added manual IP pairing. Numerous bug fixes."
+  },
+  "1.6.0": {
+    "en": "New Flow cards for charging and discharging relative to the grid connection point, both immediately and over a planned time window. Fixed the planned charging/discharging cards, which were sending an option the battery does not accept and therefore failed."
   }
 }
