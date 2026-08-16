@@ -328,6 +328,13 @@ Things that are not obvious from the code:
 - **Never send raw `cmd` strings.** `buildScheduleCommand()` output embeds setpoints and wall-clock
   timestamps. Events carry the flow card id and, at most, a direction — never the assembled
   command or the watt value.
+- **A property name means the same thing in every app, or it is useless.** Because one project
+  serves several apps, check the project's existing taxonomy before adding a property — a name that
+  already exists must keep its meaning *and its type*. Two names here are deliberately not the
+  obvious ones for this reason: `op_state` rather than `code` (the project's `code` is a numeric
+  Nibe alarm code; this is a free-form string), and `control_mode` rather than `mode` (the
+  project's `mode` is `pair`/`repair`, which this app also uses on `Completed Detection`). Both
+  collisions were shipped and caught in review before release — read the plan first, not after.
 - Flow **trigger** cards are not instrumented, and `battery_status_changed` could not be even if
   we wanted to: Homey auto-runs a trigger card whose id is `<capability_id>_changed` when
   `setCapabilityValue()` is called for a **custom** capability, so that card fires without any app

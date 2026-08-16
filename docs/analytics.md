@@ -81,12 +81,12 @@ should ever be suppressed.
 | `Started App` | Once per app launch, right after analytics init | `app_version` |
 | `Ran THEN Card` | A Flow action card ran | `card`, `ok` |
 | `Checked AND Card` | A Flow condition card was evaluated | `card`, `ok`, `result` |
-| `Changed Capability` | A capability was written from outside the app | `capability`, plus `mode` / `direction` / `applied` |
+| `Changed Capability` | A capability was written from outside the app | `capability`, plus `control_mode` / `direction` / `applied` |
 | `Changed Device Set` | A device was added or removed | `action`, `driver` |
 | `Completed Detection` | A pairing or repair attempt finished | `mode`, `method`, `found`, `found_nothing` |
 | `Lost Connection` | The battery became unreachable | `cause`, `reason` |
 | `Restored Connection` | It became reachable again | — |
-| `Raised Alarm` | The battery entered an unrecognised operating state | `code` |
+| `Raised Alarm` | The battery entered an unrecognised operating state | `op_state` |
 
 Every event additionally carries `app`, merged in at the single `track()` choke point.
 
@@ -124,7 +124,23 @@ Every event additionally carries `app`, merged in at the single `track()` choke 
   `discharging` or `idle` — the three values seen on real units.
   [docs/console-help.md](console-help.md) does not enumerate the rest, so the unrecognised states
   are precisely the ones worth learning about: each is either a fault or a state this app should be
-  handling. The raw state string is sent as `code`. Also edge-triggered.
+  handling. The raw state string is sent as `op_state`. Also edge-triggered.
+
+### Property names shared with the other app
+
+Because one Amplitude project serves several apps (see above), a property name means the same thing
+in all of them or it is useless for filtering. Two names are therefore deliberately *not* the
+obvious ones:
+
+- **`op_state`, not `code`.** The project defines `code` as a numeric Nibe alarm code. This app's
+  equivalent is a free-form firmware string, and one property cannot usefully be both a number and
+  a string.
+- **`control_mode`, not `mode`.** The project defines `mode` as `pair`/`repair` on
+  `Completed Detection`, which this app also uses that way. The `homey`/`partner` control mode
+  needs its own name rather than a second, unrelated value set on `mode`.
+
+Check the project's existing taxonomy before adding a property here; a name that already exists
+elsewhere must keep its meaning.
 
 ## User properties
 

@@ -436,7 +436,11 @@ class HomevoltBatteryDevice extends Device {
         const mode = value === 'local' ? 'homey' : 'partner';
         // A capability listener only fires when something outside the app writes the value, so
         // this is genuinely a hand on a control - the poll loop updates values without it.
-        track('Changed Capability', { capability: 'battery_control_mode', mode });
+        //
+        // `control_mode`, not `mode`: the shared Amplitude project already defines `mode` as
+        // 'pair'|'repair' on Completed Detection, and overloading one property with two unrelated
+        // value sets makes it impossible to filter cleanly.
+        track('Changed Capability', { capability: 'battery_control_mode', control_mode: mode });
         try {
           await this.setControlMode(mode);
         } catch (err) {
@@ -456,7 +460,7 @@ class HomevoltBatteryDevice extends Device {
 
         if (mode !== undefined) {
           this.log(`target_power_mode changed to: ${mode} (settings_local -> ${this.isLocalControlMode(mode)})`);
-          track('Changed Capability', { capability: 'target_power_mode', mode });
+          track('Changed Capability', { capability: 'target_power_mode', control_mode: mode });
           await this.setControlMode(mode);
         }
 
@@ -467,7 +471,7 @@ class HomevoltBatteryDevice extends Device {
             // Worth reporting: per Homey's docs their own target_power_set card switches mode to
             // 'homey' first, so a rejected write means something else is pushing setpoints at a
             // battery under partner control - a real integration problem, not a user mistake.
-            track('Changed Capability', { capability: 'target_power', applied: false, mode: effectiveMode });
+            track('Changed Capability', { capability: 'target_power', applied: false, control_mode: effectiveMode });
             return;
           }
           // Direction, not the value: a setpoint in watts is a detail of someone's tariff
@@ -642,13 +646,17 @@ updateCapabilities(data) {
  *
  * Edge-triggered for the same reason as reportConnectionState(): at a 5-second poll a battery
  * sitting in one state would otherwise report it twelve times a minute.
+ *
+ * Reported as `op_state`, deliberately NOT as `code`. The shared Amplitude project already
+ * defines `code` as a *numeric* Nibe alarm code; this is a free-form firmware string, and one
+ * property cannot usefully be both.
  */
 reportOpState(opState) {
   const state = typeof opState === 'string' ? opState.toLowerCase() : 'unknown';
   if (this.lastOpState === state) return;
   this.lastOpState = state;
   if (['charging', 'discharging', 'idle'].includes(state)) return;
-  track('Raised Alarm', { code: state });
+  track('Raised Alarm', { op_state: state });
 }
 
   /**
