@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-node": "^1.5.70",
-    "form-data": "^4.0.2",
+    "form-data": "^4.0.6",
     "node-fetch": "^2.7.0"
   }
 }
