@@ -1152,13 +1152,14 @@
         },
         "measure_power.target_power": {
           "title": {
-            "en": "Target Power (legacy)",
-            "nl": "Doelvermogen (verouderd)",
-            "de": "Zielleistung (veraltet)",
-            "fr": "Puissance cible (obsolète)",
-            "es": "Potencia objetivo (heredado)",
-            "sv": "Måleffekt (äldre)"
-          }
+            "en": "Target Power",
+            "nl": "Doelvermogen",
+            "de": "Zielleistung",
+            "fr": "Puissance cible",
+            "es": "Potencia objetivo",
+            "sv": "Måleffekt"
+          },
+          "uiComponent": null
         },
         "meter_power.exported": {
           "title": {
