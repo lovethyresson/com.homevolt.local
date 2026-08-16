@@ -633,9 +633,17 @@ updateCapabilities(data) {
 
   // Update capabilities with the fetched data
   
-  if (batteryTargetPower !== undefined && batteryTargetPower !== null) {
-    this.setCapabilityValue('measure_power.target_power', batteryTargetPower).catch(this.error);
-  }
+  // measure_power.target_power is deliberately no longer written. It predates Homey's native
+  // target_power and duplicated it once target_power started reporting the setpoint in force in
+  // both control modes, so it was hidden from the device screen and is now frozen.
+  //
+  // The capability itself is kept rather than removed: dropping it would discard the Insights
+  // history, which is the only unbroken record of what this battery has targeted - target_power's
+  // own history is a flat line from July until this release fixed it.
+  //
+  // Note the cost: its four threshold Flow cards fire on value change, so any existing Flow built
+  // on them stops firing rather than erroring. target_power carries the same value now, via its
+  // own 'The target power changed' trigger.
 
   // target_power means different things depending on who is in charge, so it is sourced
   // differently in each mode:
