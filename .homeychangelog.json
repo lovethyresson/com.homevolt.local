@@ -96,6 +96,6 @@
     "en": "Optional anonymous usage statistics, off unless you turn them on - either from the checkbox when adding a battery, or under Settings > Privacy. No battery readings, IP addresses, serial numbers, wifi details or device names are ever sent. Also fixed the battery reporting itself to Homey Energy as a whole-home meter in some setups, and improved detection of an unreachable battery."
   },
   "1.7.1": {
-    "en": "Target Power now always shows what your battery is actually aiming for, whether Homey or your energy partner is in control. Before, it kept showing the last value Homey sent, which could be months out of date. The Target Power slider now matches your battery's own rated power, so it no longer lets you ask for more than the battery can deliver."
+    "en": "Target Power now always shows what your battery is actually aiming for, whether Homey or your energy partner is in control. Before, it kept showing the last value Homey sent, which could be months out of date. The Target Power slider now matches your battery's own rated power, so it no longer lets you ask for more than the battery can deliver. The device screen used to show two Target Power rows; the duplicate is now hidden. Nothing is lost - its history is still in Insights, and any Flows using it keep working."
   }
 }

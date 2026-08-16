@@ -72,7 +72,8 @@
         "fr": "Puissance cible",
         "es": "Potencia objetivo",
         "sv": "Måleffekt"
-      }
+      },
+      "uiComponent": null
     },
     "meter_power.exported": {
       "title": {
