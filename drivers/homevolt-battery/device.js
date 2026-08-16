@@ -126,6 +126,35 @@ class HomevoltBatteryDevice extends Device {
   }
 
   /**
+   * Bound the target_power slider by the battery's actually-detected rated power.
+   *
+   * driver.compose.json declares +-12000W because that is right for a dual-Homevolt setup, but on
+   * a single 6kW unit that leaves the top half of the slider unusable: applyTargetPower() calls
+   * assertPowerWithinRatedLimit(), so anything above the rated power throws, and the user gets a
+   * failed Flow card rather than an explanation. Narrow the control to what this battery can
+   * actually do, so the limit is visible in the UI instead of only enforced on write.
+   *
+   * Runs whenever detection changes the figure (including from 0 on first poll), so a pack added
+   * or removed later re-widens or re-narrows it without re-pairing.
+   */
+  async applyTargetPowerRange(ratedPowerWatts) {
+    if (!this.hasCapability('target_power') || !ratedPowerWatts) return;
+    try {
+      const current = this.getCapabilityOptions('target_power') || {};
+      if (current.min === -ratedPowerWatts && current.max === ratedPowerWatts) return;
+      await this.setCapabilityOptions('target_power', {
+        ...current,
+        min: -ratedPowerWatts,
+        max: ratedPowerWatts,
+      });
+      this.log(`Bounded target_power to +-${ratedPowerWatts}W from detected rated power`);
+    } catch (err) {
+      // A cosmetic range is not worth failing a poll over.
+      this.error('Failed to set target_power capability options:', err);
+    }
+  }
+
+  /**
    * Actually change the control mode: writes settings_local to the firmware and
    * mirrors both control-mode capabilities. Toggling settings_local does NOT
    * clear whatever schedule is currently loaded on the device - so on any
@@ -145,6 +174,14 @@ class HomevoltBatteryDevice extends Device {
     await this.applyControlModeCapabilities(mode);
 
     if (previousMode !== undefined && previousMode !== mode) {
+      // Handing control away drops Homey's setpoint at once rather than leaving it on the tile
+      // until the next poll. Only on an actual transition: updateCapabilities() already mirrors
+      // the battery's reported target whenever the mode is not 'homey', so doing this on every
+      // call would fight that mirror and briefly show 0 on each app start.
+      if (mode !== 'homey' && this.hasCapability('target_power') && this.getCapabilityValue('target_power') !== 0) {
+        this.log(`Control mode changed '${previousMode}' -> '${mode}'; discarding Homey's setpoint on target_power`);
+        await this.setCapabilityValue('target_power', 0).catch(this.error);
+      }
       try {
         await this.sendBatteryCommand('sched_set 0');
         this.log(`Control mode changed '${previousMode}' -> '${mode}'; idled the schedule for a clean handover`);
@@ -578,6 +615,7 @@ updateCapabilities(data) {
   if (newRatedPowerWatts !== this.ratedPowerWatts) {
     this.log(`Detected rated power: ${newRatedPowerWatts}W (used as the max for charge/discharge flow actions)`);
     this.ratedPowerWatts = newRatedPowerWatts;
+    this.applyTargetPowerRange(newRatedPowerWatts).catch(this.error);
   }
 
   // Parse data into useful data points and update capabilities
@@ -597,6 +635,24 @@ updateCapabilities(data) {
   
   if (batteryTargetPower !== undefined && batteryTargetPower !== null) {
     this.setCapabilityValue('measure_power.target_power', batteryTargetPower).catch(this.error);
+  }
+
+  // target_power means different things depending on who is in charge, so it is sourced
+  // differently in each mode:
+  // - 'homey': it is Homey's commanded setpoint and is left alone. Polling over it would let a
+  //   battery that is still ramping overwrite the value the user just asked for.
+  // - anything else: nothing in Homey owns the setpoint, so mirror what the battery reports it is
+  //   targeting. That is the only visibility there is into what the partner cloud is doing, and
+  //   the battery spends most of its life in that mode.
+  //
+  // setCapabilityValue() does not invoke this device's own capability listener - that only fires
+  // for writes from the UI, a Flow or the API - so this cannot loop back into applyTargetPower()
+  // and cannot send anything to the firmware.
+  if (this.hasCapability('target_power')
+    && this.getCapabilityValue('target_power_mode') !== 'homey'
+    && Number.isFinite(batteryTargetPower)
+    && this.getCapabilityValue('target_power') !== batteryTargetPower) {
+    this.setCapabilityValue('target_power', batteryTargetPower).catch(this.error);
   }
   if (batteryChargePower !== undefined && batteryChargePower !== null) {
       this.setCapabilityValue('measure_power', batteryChargePower).catch(this.error);
