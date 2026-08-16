@@ -91,5 +91,8 @@
   },
   "1.6.0": {
     "en": "New Flow cards for charging and discharging relative to the grid connection point, both immediately and over a planned time window. Fixed the planned charging/discharging cards, which were sending an option the battery does not accept and therefore failed."
+  },
+  "1.7.0": {
+    "en": "Optional anonymous usage statistics, off unless you turn them on - either from the checkbox when adding a battery, or under Settings > Privacy. No battery readings, IP addresses, serial numbers, wifi details or device names are ever sent. Also fixed the battery reporting itself to Homey Energy as a whole-home meter in some setups, and improved detection of an unreachable battery."
   }
 }

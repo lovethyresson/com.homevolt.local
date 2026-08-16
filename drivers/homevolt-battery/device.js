@@ -1,6 +1,7 @@
 const { Device } = require('homey');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const { track, trackedRunListener, reportInstallProfile } = require('../../lib/analytics');
 
 // Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
 const DEBUG = process.env.DEBUG === '1';
@@ -248,7 +249,7 @@ class HomevoltBatteryDevice extends Device {
 
       // Register capability listener for battery status
       const cardConditionBatteryStatus = this.homey.flow.getConditionCard('battery_status');
-      cardConditionBatteryStatus.registerRunListener(async (args, state) => {
+      cardConditionBatteryStatus.registerRunListener(trackedRunListener('condition', 'battery_status', async (args, state) => {
         const device = args.device;
         try {
           const data = await device.homey.app.getStatus({ address: device.ip });
@@ -260,11 +261,11 @@ class HomevoltBatteryDevice extends Device {
           device.error('Error in battery_status condition:', error.message);
           return false;
         }
-      });
+      }));
 
       // Flow action for clearing the schedule
       this.homey.flow.getActionCard('clear_schedule')
-        .registerRunListener(async (args) => {
+        .registerRunListener(trackedRunListener('action', 'clear_schedule', async (args) => {
           const device = args.device;
           try {
             await device.sendBatteryCommand('sched_clear');
@@ -272,11 +273,11 @@ class HomevoltBatteryDevice extends Device {
           } catch (err) {
             device.error('Failed to clear schedule:', err);
           }
-        });
+        }));
 
       // Flow action card for planning to charge the battery
       this.homey.flow.getActionCard('charge_battery')
-      .registerRunListener(async (args) => {
+      .registerRunListener(trackedRunListener('action', 'charge_battery', async (args) => {
         const device = args.device;
         const { power, start_date, end_date, start_time, end_time } = args;
         device.assertPowerWithinRatedLimit(power);
@@ -293,11 +294,11 @@ class HomevoltBatteryDevice extends Device {
           device.error('Failed to set charge schedule:', err);
           throw new Error(err.message);
         }
-      });
+      }));
 
       // Flow action card for planning to discharge the battery
       this.homey.flow.getActionCard('discharge_battery')
-      .registerRunListener(async (args) => {
+      .registerRunListener(trackedRunListener('action', 'discharge_battery', async (args) => {
         const device = args.device;
         const { power, start_date, end_date, start_time, end_time } = args;
         device.assertPowerWithinRatedLimit(power);
@@ -314,7 +315,7 @@ class HomevoltBatteryDevice extends Device {
           device.error('Failed to set discharge schedule:', err);
           throw new Error(err.message);
         }
-      });
+      }));
 
       // Grid-referenced actions (schedule types 3/4/5). Unlike the cards above,
       // the setpoint here is measured at the grid connection point rather than
@@ -336,7 +337,7 @@ class HomevoltBatteryDevice extends Device {
 
       for (const { id, type, scheduled } of gridCards) {
         this.homey.flow.getActionCard(id)
-        .registerRunListener(async (args) => {
+        .registerRunListener(trackedRunListener('action', id, async (args) => {
           const device = args.device;
           const window = scheduled
             ? {
@@ -351,7 +352,7 @@ class HomevoltBatteryDevice extends Device {
             device.error(`Failed to run '${id}':`, err);
             throw new Error(err.message);
           }
-        });
+        }));
       }
 
       // Deprecated: superseded by Homey's native target_power for new Flows.
@@ -362,7 +363,7 @@ class HomevoltBatteryDevice extends Device {
       // 'partner' mode. Hidden from new-Flow card pickers (see "deprecated":
       // true in driver.flow.compose.json).
       this.homey.flow.getActionCard('force_charge')
-      .registerRunListener(async (args) => {
+      .registerRunListener(trackedRunListener('action', 'force_charge', async (args) => {
         const device = args.device;
         const { power } = args;
         try {
@@ -373,11 +374,11 @@ class HomevoltBatteryDevice extends Device {
           device.error('Failed to force charge:', err);
           throw new Error('Could not start force charging');
         }
-      });
+      }));
 
       // Deprecated: see force_charge above.
       this.homey.flow.getActionCard('force_discharge')
-      .registerRunListener(async (args) => {
+      .registerRunListener(trackedRunListener('action', 'force_discharge', async (args) => {
         const device = args.device;
         const { power } = args;
         try {
@@ -388,13 +389,13 @@ class HomevoltBatteryDevice extends Device {
           device.error('Failed to force discharge:', err);
           throw new Error('Could not start force discharging');
         }
-      });
+      }));
 
       // Deprecated: kept working for existing Flows, hidden from new-Flow card
       // pickers (see "deprecated": true in driver.flow.compose.json). Superseded
       // by the Homey-native target_power_mode capability/cards.
       this.homey.flow.getActionCard('set_battery_control_mode')
-      .registerRunListener(async (args) => {
+      .registerRunListener(trackedRunListener('action', 'set_battery_control_mode', async (args) => {
         const device = args.device;
         const value = typeof args.mode === 'object' && args.mode.name ? args.mode.name : args.mode;
         device.log('Flow card: setting battery_control_mode to', value);
@@ -409,7 +410,7 @@ class HomevoltBatteryDevice extends Device {
           device.error('Failed to set battery control mode from flow:', err);
           throw new Error('Could not set battery control mode');
         }
-      })
+      }))
       .registerArgumentAutocompleteListener('mode', async (query) => {
         const options = ['local', 'remote'].filter(m => m.includes(query.toLowerCase()));
         return options.map(m => ({ name: m }));
@@ -428,24 +429,18 @@ class HomevoltBatteryDevice extends Device {
     // Setup settings
     await this.initSettings();
 
-    // Update energy settings if needed
-    this.on('energy-settings', (energySettings) => {
-      if (energySettings.isSmartMeter() && !this.getEnergy().cumulative) {
-        this.log('Updating energy settings for smart meter');
-        this.setEnergy({
-          cumulative: true,
-          homeBattery: true,
-          cumulativeImportedCapability: 'meter_power.imported',
-          cumulativeExportedCapability: 'meter_power.exported',
-        }).catch(this.error);
-      }
-    });
-
     if (this.hasCapability('battery_control_mode')) {
       this.registerCapabilityListener('battery_control_mode', async (value) => {
         this.log('battery_control_mode changed to:', value);
         // Same legacy local/remote -> homey/partner mapping as the deprecated flow card.
         const mode = value === 'local' ? 'homey' : 'partner';
+        // A capability listener only fires when something outside the app writes the value, so
+        // this is genuinely a hand on a control - the poll loop updates values without it.
+        //
+        // `control_mode`, not `mode`: the shared Amplitude project already defines `mode` as
+        // 'pair'|'repair' on Completed Detection, and overloading one property with two unrelated
+        // value sets makes it impossible to filter cleanly.
+        track('Changed Capability', { capability: 'battery_control_mode', control_mode: mode });
         try {
           await this.setControlMode(mode);
         } catch (err) {
@@ -465,6 +460,7 @@ class HomevoltBatteryDevice extends Device {
 
         if (mode !== undefined) {
           this.log(`target_power_mode changed to: ${mode} (settings_local -> ${this.isLocalControlMode(mode)})`);
+          track('Changed Capability', { capability: 'target_power_mode', control_mode: mode });
           await this.setControlMode(mode);
         }
 
@@ -472,8 +468,19 @@ class HomevoltBatteryDevice extends Device {
           const effectiveMode = mode !== undefined ? mode : this.getCapabilityValue('target_power_mode');
           if (effectiveMode !== 'homey') {
             this.log(`Ignoring target_power=${power}W; target_power_mode is '${effectiveMode}', not 'homey'`);
+            // Worth reporting: per Homey's docs their own target_power_set card switches mode to
+            // 'homey' first, so a rejected write means something else is pushing setpoints at a
+            // battery under partner control - a real integration problem, not a user mistake.
+            track('Changed Capability', { capability: 'target_power', applied: false, control_mode: effectiveMode });
             return;
           }
+          // Direction, not the value: a setpoint in watts is a detail of someone's tariff
+          // optimisation and says more about their house than about this app.
+          track('Changed Capability', {
+            capability: 'target_power',
+            applied: true,
+            direction: power > 0 ? 'charge' : power < 0 ? 'discharge' : 'idle',
+          });
           try {
             await this.applyTargetPower(power);
           } catch (err) {
@@ -527,11 +534,39 @@ restartPolling(newInterval) {
 async fetchData() {
   try {
     const data = await this.homey.app.getStatus({ address: this.ip });
+    // getStatus resolves to null rather than rejecting once _fetchWithRetry has exhausted its
+    // retries, so without this an unreachable battery surfaces as a TypeError on data.ems[0]
+    // deep inside updateCapabilities rather than as the connection failure it actually is.
+    if (!data || !Array.isArray(data.ems)) {
+      throw new Error('No EMS data in response');
+    }
     this.updateCapabilities(data);
+    this.reportConnectionState(true);
 
   } catch (error) {
     this.log('Error fetching data:', error.message);
+    this.reportConnectionState(false, error.message);
     await this.setUnavailable('Error fetching data');
+  }
+}
+
+/**
+ * Report a change in reachability, edge-triggered.
+ *
+ * Deliberately only fires on a *transition*. Polling runs every 5 seconds by default, so a
+ * battery that is off for an hour would otherwise produce ~720 identical events - which would
+ * both drown the project's event quota and turn one outage into what looks like an epidemic.
+ */
+reportConnectionState(reachable, reason) {
+  if (this.connectionOk === reachable) return;
+  const first = this.connectionOk === undefined;
+  this.connectionOk = reachable;
+  // Nothing to report the first time we succeed - that is just the device starting up normally.
+  if (first && reachable) return;
+  if (!reachable) {
+    track('Lost Connection', { cause: 'poll_failed', reason: String(reason || 'unknown') });
+  } else {
+    track('Restored Connection', {});
   }
 }
 
@@ -585,6 +620,7 @@ updateCapabilities(data) {
       this.setCapabilityValue('measure_frequency', batteryGridFrequency).catch(this.error);
   }
   if (batteryStatus !== null) {
+    this.reportOpState(batteryStatus);
     if (batteryStatus == 'charging') {
       this.setCapabilityValue('battery_status', this.homey.__("battery_status_charging")).catch(this.error);
     } else if (batteryStatus == 'discharging') {
@@ -599,11 +635,44 @@ updateCapabilities(data) {
   this.setAvailable().catch(this.error); // Ensure the device remains available after updates
 }
 
+/**
+ * Report the battery entering an operating state this app does not recognise.
+ *
+ * The firmware's `op_state_str` is a free-form string and docs/console-help.md does not enumerate
+ * its values; the three handled below ('charging', 'discharging', 'idle') are simply the ones
+ * seen on real units. Anything else falls through to the "Unknown" tile, which is exactly the
+ * case worth knowing about - it is either a fault state or a value this app should be handling.
+ * Reporting the raw string is the only way to find out which states actually occur in the field.
+ *
+ * Edge-triggered for the same reason as reportConnectionState(): at a 5-second poll a battery
+ * sitting in one state would otherwise report it twelve times a minute.
+ *
+ * Reported as `op_state`, deliberately NOT as `code`. The shared Amplitude project already
+ * defines `code` as a *numeric* Nibe alarm code; this is a free-form firmware string, and one
+ * property cannot usefully be both.
+ */
+reportOpState(opState) {
+  const state = typeof opState === 'string' ? opState.toLowerCase() : 'unknown';
+  if (this.lastOpState === state) return;
+  this.lastOpState = state;
+  if (['charging', 'discharging', 'idle'].includes(state)) return;
+  track('Raised Alarm', { op_state: state });
+}
+
+  /**
+   * Called when the device is added. Exists only to report it: onInit also runs on every app
+   * restart, so it cannot tell a new install from a reboot, and this can.
+   */
+  async onAdded() {
+    track('Changed Device Set', { action: 'added', driver: 'homevolt-battery' });
+  }
+
   /**
    * Called when the device is deleted
    */
   async onDeleted() {
     this.log('Device deleted, stopping polling');
+    track('Changed Device Set', { action: 'removed', driver: 'homevolt-battery' });
     if (this.pollingTimer) {
         clearInterval(this.pollingTimer);
     }
@@ -651,6 +720,23 @@ updateCapabilities(data) {
 
       // Apply settings safely
       await this.setSettings(settings).catch(err => this.error("Error applying settings:", err));
+
+      // What this install *is*, as opposed to what it did - sent as anonymous user properties so
+      // the cross-sectional questions ("of the 3-pack installs, how many run in partner mode?")
+      // are a segmentation rather than an event count. Debounced inside reportInstallProfile(),
+      // so several devices initialising at once collapse into one identify.
+      //
+      // Note what is NOT here: wifi_ssid and wifi_ip are read just above for the device settings
+      // page, and neither has any business leaving the LAN.
+      reportInstallProfile({
+        batteryPacks: totalBatteryPacks || 0,
+        ratedCapacityKwh: (totalRatedCapacity || 0) / 1000,
+        ratedPowerW: totalRatedPower || 0,
+        controlMode: this.hasCapability('target_power_mode')
+          ? this.getCapabilityValue('target_power_mode')
+          : undefined,
+        ...this.homey.app.hostFacts(),
+      });
 
     } catch (error) {
       this.error("Error initializing device settings:", error);

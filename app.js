@@ -2,6 +2,9 @@
 
 const Homey = require('homey');
 const fetch = require('node-fetch');
+const {
+  CONSENT_SETTING, initAnalytics, refreshConsent, appVersion, track,
+} = require('./lib/analytics');
 
 // Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
 const DEBUG = process.env.DEBUG === '1';
@@ -93,6 +96,11 @@ module.exports = class HomevoltApp extends Homey.App {
   async onInit() {
     this.log('Homevolt App initialized.');
 
+    // Anonymous analytics, off unless the user ticked the box. Without consent this touches
+    // nothing: no SDK init, no anonymous id minted, nothing on the wire. See lib/analytics.js.
+    initAnalytics(this.homey, this.log.bind(this), this.error.bind(this));
+    track('Started App', { app_version: appVersion() });
+
     // Get the initial polling interval
     const pollingInterval = this.getPollingInterval();
     this.log(`Initial polling interval: ${pollingInterval} seconds`);
@@ -106,7 +114,38 @@ module.exports = class HomevoltApp extends Homey.App {
         // Notify all devices to restart polling
         await this.restartDevicePolling(newInterval);
       }
+
+      // The settings page writes this key directly, so consent flipped there is honored on the
+      // next event rather than at the next app start.
+      if (key === CONSENT_SETTING) {
+        refreshConsent(this.homey);
+      }
     });
+  }
+
+  /**
+   * The hub this is all running on, for the anonymous install profile. Sent as the SDK reports it
+   * rather than mapped to a product name: `platform` + `platformVersion` together identify the
+   * product, but that mapping is Athom's to change and would rot here.
+   *
+   * Timezone is the country signal - 'Europe/Stockholm' resolves to a country for every zone that
+   * matters, without embedding an IANA->ISO table that goes stale. Language and units are locale,
+   * not location: plenty of Swedish users run Homey in English.
+   */
+  hostFacts() {
+    try {
+      return {
+        homeyVersion: this.homey.version,
+        homeyPlatform: this.homey.platform ?? 'local',
+        homeyPlatformVersion: this.homey.platformVersion ?? 1,
+        timezone: this.homey.clock.getTimezone(),
+        language: this.homey.i18n.getLanguage(),
+        units: this.homey.i18n.getUnits(),
+      };
+    } catch (error) {
+      this.error('Could not read host facts for the install profile', error);
+      return {};
+    }
   }
 
   getPollingInterval() {

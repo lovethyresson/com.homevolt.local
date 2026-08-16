@@ -248,3 +248,96 @@ use `sched_add` (appending alongside whatever else is scheduled).
 
 - `ems` — show EMS (inverter) info (used for rated power / status polling elsewhere in the app).
 - `energy [-n <name>] [-i <kWh>] [-e <kWh>] [-s]` — list/modify energy counters.
+
+# Homey Energy configuration
+
+The `energy` block lives in each driver's `driver.compose.json` and **should stay there**. Two rules,
+both learned the hard way:
+
+## A home battery is never `cumulative`
+
+`cumulative` marks a *whole-home* meter (P1 meter, current clamp): Homey subtracts every other
+device's usage from cumulative devices and reports the remainder as "other". Getting this wrong
+corrupts the entire Energy dashboard, not just the offending device's tile.
+
+- `homevolt-battery` -> `{homeBattery, batteries: ["INTERNAL"], meterPowerImportedCapability,
+  meterPowerExportedCapability}`. This matches what every other Homey home battery ships (Victron,
+  SMA, GivEnergy, Sigenergy all use `homeBattery` + `meterPower*`).
+- `homevolt-sensor` -> `{cumulative, cumulativeImportedCapability, cumulativeExportedCapability}`.
+  This is the grid sensor, and it is byte-identical to what Tibber's Pulse (a P1 meter) declares.
+  **The sensor already fills the cumulative role, which is exactly why the battery must not.**
+
+`meter_power.imported`/`.exported` are deliberately *not* renamed to `.charged`/`.discharged`. Any
+`meter_power` instance is a legal target for `meterPower*Capability`; other apps use the `.charged`
+spelling only because they picked it first. Renaming would destroy users' Insights history and break
+existing Flows.
+
+An `energy-settings` / `isSmartMeter()` handler that set `cumulative: true` on the battery lived in
+device.js from v1.4.0 (2025-06-05) until it was removed. It never fired — Homey offers no
+smart-meter setting on a `class: battery` device, whose Advanced Settings expose only "Exclude from
+Energy" — but it was copied from a docs snippet meant for P1 meter apps. Don't reintroduce it.
+
+## `setEnergy()` is a one-way door
+
+`Device.setEnergy()` takes the **complete** energy object and overwrites every existing property.
+Worse, once it has been called, that device **ignores `driver.compose.json`'s `energy` block
+forever** — the SDK documents no way to clear an override.
+
+Consequences:
+
+- Never call `setEnergy()` with a partial object. The removed handler passed only the `cumulative*`
+  properties, which would have silently dropped `batteries` and both `meterPower*Capability`
+  pointers from any device that hit it.
+- Never call it unconditionally on init. That *creates* an override on a healthy device and detaches
+  it from the manifest permanently — a far worse outcome than whatever it was meant to fix.
+- If a device ever does need repairing, guard the call on detecting the bad state first, and mirror
+  any future manifest energy change into that repair code, or repaired devices will silently keep the
+  old config. `migrateLegacySolarDevice()` in
+  [drivers/homevolt-sensor/device.js](drivers/homevolt-sensor/device.js) is the in-place migration
+  idiom to copy: idempotence check, plus a log line on both branches so the app log says whether the
+  patch applied or was already applied.
+
+# Analytics
+
+Anonymous, opt-in product analytics via Amplitude. The whole surface is
+[lib/analytics.js](lib/analytics.js); **[docs/analytics.md](docs/analytics.md) is the
+source-of-truth privacy document and must be updated whenever an event or property changes** — it
+is the only record of what leaves the device, so it is only true if it is maintained.
+
+Things that are not obvious from the code:
+
+- **The Amplitude project is shared with `com.nibe.local`** (and any future Homey app by the same
+  author). One ingestion key, one project; the `app` property — read from `manifest.id`, merged in
+  at the single `track()` choke point — is what separates them again. Do **not** mint a per-app
+  key: Amplitude charts cannot span projects, so splitting would permanently foreclose cross-app
+  questions, and merging afterwards is not possible without re-ingesting.
+- **`lib/analytics.js` is deliberately kept diffable against `com.nibe.local/lib/analytics.ts`**,
+  which is the same module in TypeScript. Since both apps report into one project, the taxonomies
+  have to stay in step, and reading the two files side by side is how that is maintained. Keep the
+  event names, the setting keys (`analytics_consent`, `analytics_device_id`) and the function
+  shapes aligned; prefer porting a change to both over letting them drift.
+- **`SERVER_ZONE` and `API_KEY` move together.** An ingestion key is scoped to its project's
+  region, and the SDK's default zone is `US`, which would reject the EU key outright.
+- **Identity is a random UUID per app, minted only after consent.** Homey sandboxes app settings,
+  so one Homey running two of these apps counts as two Amplitude users. That is intentional (see
+  docs/analytics.md); do not "fix" it by deriving a shared id from the Homey id without treating
+  it as the privacy-posture change that it is.
+- **Anything fired from the poll loop must be edge-triggered.** Polling defaults to 5 seconds, so
+  a per-poll event is ~720 events an hour per device. `reportConnectionState()` and
+  `reportOpState()` both guard on a stored last value for this reason.
+- **Never send raw `cmd` strings.** `buildScheduleCommand()` output embeds setpoints and wall-clock
+  timestamps. Events carry the flow card id and, at most, a direction — never the assembled
+  command or the watt value.
+- **A property name means the same thing in every app, or it is useless.** Because one project
+  serves several apps, check the project's existing taxonomy before adding a property — a name that
+  already exists must keep its meaning *and its type*. Two names here are deliberately not the
+  obvious ones for this reason: `op_state` rather than `code` (the project's `code` is a numeric
+  Nibe alarm code; this is a free-form string), and `control_mode` rather than `mode` (the
+  project's `mode` is `pair`/`repair`, which this app also uses on `Completed Detection`). Both
+  collisions were shipped and caught in review before release — read the plan first, not after.
+- Flow **trigger** cards are not instrumented, and `battery_status_changed` could not be even if
+  we wanted to: Homey auto-runs a trigger card whose id is `<capability_id>_changed` when
+  `setCapabilityValue()` is called for a **custom** capability, so that card fires without any app
+  code and has no run listener to wrap. (This is also why the card works despite `grep -rn
+  "\.trigger("` finding nothing — it is not dead code.) Instrumenting the capability write instead
+  would count state transitions from the poll loop rather than Flow activity.

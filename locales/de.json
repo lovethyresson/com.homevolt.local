@@ -4,6 +4,10 @@
   "battery_status_idle": "Leerlauf",
   "battery_status_unknown": "Unbekannt",
   "app_settings_refresh_label": "Aktualisierungsintervall (Sekunden)",
+  "app_settings_success": "Aktualisierungsintervall erfolgreich aktualisiert!",
+  "app_settings_privacy_legend": "Datenschutz",
+  "app_settings_analytics_label": "Anonyme Nutzungsdaten senden",
+  "app_settings_analytics_hint": "Hilft, die App zu verbessern. Messwerte, IP-Adressen, Seriennummern und Gerätenamen werden niemals gesendet.",
   "battery_control_mode.local": "Lokal",
   "battery_control_mode.remote": "Fernsteuerung"
 }

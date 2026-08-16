@@ -28,6 +28,16 @@
   .divider span { margin: 0 10px; }
   .hint { color: #888; font-size: 0.85em; margin: 6px 0 14px; }
   #manual-ip { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
+  .consent-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 20px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid #ddd;
+  }
+  .consent-row input { margin-top: 3px; }
+  .consent-row label { font-size: 0.9em; }
 </style>
 
 <p>Devices found on your network:</p>
@@ -40,10 +50,28 @@
 <p class="hint">Use this if your Homevolt battery wasn't found above, e.g. it's on a different subnet than Homey.</p>
 <button type="button" id="connect-btn" class="homey-button-primary-full">Connect</button>
 
+<div class="consent-row">
+  <input type="checkbox" id="analytics-consent" />
+  <label for="analytics-consent">
+    Help improve this app by sending anonymous usage data.
+    No readings, IP addresses, serial numbers or device names are ever sent.
+    You can change this any time in the app settings.
+  </label>
+</div>
+
 <script type="text/javascript">
+  // Store the answer before the device is created, so the very first events an install sends are
+  // already governed by it. Never blocks pairing: if storing consent fails, that is not a reason
+  // to stop someone adding their battery.
+  function applyConsent() {
+    const consent = document.getElementById('analytics-consent').checked;
+    return Homey.emit('set_analytics_consent', consent).catch(() => {});
+  }
+
   function addDevice(device) {
     Homey.showLoadingOverlay();
-    Homey.createDevice(device)
+    applyConsent()
+      .then(() => Homey.createDevice(device))
       .then(() => Homey.done())
       .catch((err) => {
         Homey.hideLoadingOverlay();
@@ -69,6 +97,14 @@
   Homey.emit('list_devices', null)
     .then(renderDevices)
     .catch((err) => Homey.alert(err.message || err));
+
+  // Unticked by default - consent is opt-in. Pre-ticked only for someone who already agreed on an
+  // earlier pairing, so re-pairing does not silently look like a fresh refusal.
+  Homey.emit('get_analytics_consent', null)
+    .then((consent) => {
+      document.getElementById('analytics-consent').checked = consent === true;
+    })
+    .catch(() => {});
 
   document.getElementById('connect-btn').addEventListener('click', () => {
     const ip = document.getElementById('manual-ip').value.trim();
