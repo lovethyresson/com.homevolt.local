@@ -23,6 +23,14 @@ Monitor your charge level, charge/discharge pattern and even grid frequency from
 - If mDNS discovery can't find your device (e.g. it's on a different subnet than Homey), you can enter its IP address manually on the pairing screen. If that IP later changes, use "Repair" on the device (in its advanced settings) to update it without re-pairing.
 
 
+## PRIVACY
+This app can send anonymous usage data to help improve it. It is **off unless you turn it on**,
+either from the checkbox on the pairing screen or under Settings → Privacy.
+
+No battery readings, IP addresses, serial numbers, wifi details or device names are ever sent.
+[docs/analytics.md](docs/analytics.md) is the full account of what is sent, when, and why.
+
+
 ## LINKS
 - Homey app store link [here](https://homey.app/en-se/app/com.homevolt.local/Homevolt/).
 - Discussions in the Homey community forum [here](https://community.homey.app/t/app-pro-homevolt/128447).

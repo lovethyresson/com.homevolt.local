@@ -5,6 +5,9 @@
     "battery_status_unknown": "Unknown",
     "app_settings_refresh_label": "Refresh Interval (seconds)",
     "app_settings_success": "Refresh interval updated successfully!",
+    "app_settings_privacy_legend": "Privacy",
+    "app_settings_analytics_label": "Send anonymous usage data",
+    "app_settings_analytics_hint": "Helps improve the app. Readings, IP addresses, serial numbers and device names are never sent.",
     "battery_control_mode.local": "Local",
     "battery_control_mode.remote": "Remote"
 }

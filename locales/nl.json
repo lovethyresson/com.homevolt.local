@@ -5,6 +5,9 @@
   "battery_status_unknown": "Onbekend",
   "app_settings_refresh_label": "Vernieuwingsinterval (seconden)",
   "app_settings_success": "Vernieuwingsinterval succesvol bijgewerkt!",
+  "app_settings_privacy_legend": "Privacy",
+  "app_settings_analytics_label": "Anonieme gebruiksgegevens verzenden",
+  "app_settings_analytics_hint": "Helpt de app te verbeteren. Metingen, IP-adressen, serienummers en apparaatnamen worden nooit verzonden.",
   "battery_control_mode.local": "Lokaal",
   "battery_control_mode.remote": "Op afstand"
 }

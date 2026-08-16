@@ -248,3 +248,41 @@ use `sched_add` (appending alongside whatever else is scheduled).
 
 - `ems` — show EMS (inverter) info (used for rated power / status polling elsewhere in the app).
 - `energy [-n <name>] [-i <kWh>] [-e <kWh>] [-s]` — list/modify energy counters.
+
+# Analytics
+
+Anonymous, opt-in product analytics via Amplitude. The whole surface is
+[lib/analytics.js](lib/analytics.js); **[docs/analytics.md](docs/analytics.md) is the
+source-of-truth privacy document and must be updated whenever an event or property changes** — it
+is the only record of what leaves the device, so it is only true if it is maintained.
+
+Things that are not obvious from the code:
+
+- **The Amplitude project is shared with `com.nibe.local`** (and any future Homey app by the same
+  author). One ingestion key, one project; the `app` property — read from `manifest.id`, merged in
+  at the single `track()` choke point — is what separates them again. Do **not** mint a per-app
+  key: Amplitude charts cannot span projects, so splitting would permanently foreclose cross-app
+  questions, and merging afterwards is not possible without re-ingesting.
+- **`lib/analytics.js` is deliberately kept diffable against `com.nibe.local/lib/analytics.ts`**,
+  which is the same module in TypeScript. Since both apps report into one project, the taxonomies
+  have to stay in step, and reading the two files side by side is how that is maintained. Keep the
+  event names, the setting keys (`analytics_consent`, `analytics_device_id`) and the function
+  shapes aligned; prefer porting a change to both over letting them drift.
+- **`SERVER_ZONE` and `API_KEY` move together.** An ingestion key is scoped to its project's
+  region, and the SDK's default zone is `US`, which would reject the EU key outright.
+- **Identity is a random UUID per app, minted only after consent.** Homey sandboxes app settings,
+  so one Homey running two of these apps counts as two Amplitude users. That is intentional (see
+  docs/analytics.md); do not "fix" it by deriving a shared id from the Homey id without treating
+  it as the privacy-posture change that it is.
+- **Anything fired from the poll loop must be edge-triggered.** Polling defaults to 5 seconds, so
+  a per-poll event is ~720 events an hour per device. `reportConnectionState()` and
+  `reportOpState()` both guard on a stored last value for this reason.
+- **Never send raw `cmd` strings.** `buildScheduleCommand()` output embeds setpoints and wall-clock
+  timestamps. Events carry the flow card id and, at most, a direction — never the assembled
+  command or the watt value.
+- Flow **trigger** cards are not instrumented, and `battery_status_changed` could not be even if
+  we wanted to: Homey auto-runs a trigger card whose id is `<capability_id>_changed` when
+  `setCapabilityValue()` is called for a **custom** capability, so that card fires without any app
+  code and has no run listener to wrap. (This is also why the card works despite `grep -rn
+  "\.trigger("` finding nothing — it is not dead code.) Instrumenting the capability write instead
+  would count state transitions from the poll loop rather than Flow activity.

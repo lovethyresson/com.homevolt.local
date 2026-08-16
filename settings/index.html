@@ -7,6 +7,20 @@
       src="/homey.js"
       data-origin="settings"
     ></script>
+    <style>
+      .consent-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .consent-label input { margin-top: 3px; }
+      .consent-hint {
+        color: #888;
+        font-size: 0.85em;
+        margin: 6px 0 0;
+      }
+    </style>
   </head>
   <body>
     <header class="homey-header">
@@ -27,6 +41,22 @@
       </div>
     </fieldset>
 
+    <!-- Its own titled section rather than a stray checkbox under the refresh interval: a consent
+         control nobody can find is not a consent control. Plain markup with local styles, the
+         same approach as the pairing screen - Homey's form classes cover inputs and buttons, but
+         a checkbox row is left to the page. -->
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" id="privacyLegend"></legend>
+
+      <div class="homey-form-group">
+        <label class="consent-label">
+          <input type="checkbox" id="analyticsConsent" />
+          <span id="analyticsLabel"></span>
+        </label>
+        <p class="consent-hint" id="analyticsHint"></p>
+      </div>
+    </fieldset>
+
     <button id="save" class="homey-button-primary-full">Save changes</button>
 
     <script type="text/javascript">
@@ -38,22 +68,38 @@
         var pollingIntervalElement = document.getElementById("pollingInterval");
         var saveElement = document.getElementById("save");
         var refreshLabelElement = document.getElementById("refreshLabel");
-    
+        var analyticsConsentElement = document.getElementById("analyticsConsent");
+
         // Get the current pollingInterval setting
         Homey.get("pollingInterval", function (err, pollingInterval) {
           if (err) return Homey.alert(err);
           pollingIntervalElement.value = pollingInterval; // Correctly set the input value
         });
-    
+
+        // Analytics is opt-in, so an unset value must read as unticked.
+        Homey.get("analytics_consent", function (err, analyticsConsent) {
+          if (err) return Homey.alert(err);
+          analyticsConsentElement.checked = analyticsConsent === true;
+        });
+
         // Set translation for label
         refreshLabelElement.textContent = Homey.__("app_settings_refresh_label") || "Translation Missing!";
-    
+        document.getElementById("privacyLegend").textContent = Homey.__("app_settings_privacy_legend") || "Translation Missing!";
+        document.getElementById("analyticsLabel").textContent = Homey.__("app_settings_analytics_label") || "Translation Missing!";
+        document.getElementById("analyticsHint").textContent = Homey.__("app_settings_analytics_hint") || "Translation Missing!";
+
         // Save changes when the Save button is clicked
         saveElement.addEventListener("click", function (e) {
           const newPollingInterval = pollingIntervalElement.value;
           Homey.set("pollingInterval", newPollingInterval, function (err) {
             if (err) return Homey.alert(err);
-            Homey.alert(Homey.__("app_settings_success"));
+            // Written second so the app's settings listener sees the consent change last; the
+            // listener calls refreshConsent(), which starts or stops tracking straight away
+            // rather than at the next app start.
+            Homey.set("analytics_consent", analyticsConsentElement.checked, function (err) {
+              if (err) return Homey.alert(err);
+              Homey.alert(Homey.__("app_settings_success"));
+            });
           });
         });
       }
