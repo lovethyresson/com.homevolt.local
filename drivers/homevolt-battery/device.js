@@ -429,19 +429,6 @@ class HomevoltBatteryDevice extends Device {
     // Setup settings
     await this.initSettings();
 
-    // Update energy settings if needed
-    this.on('energy-settings', (energySettings) => {
-      if (energySettings.isSmartMeter() && !this.getEnergy().cumulative) {
-        this.log('Updating energy settings for smart meter');
-        this.setEnergy({
-          cumulative: true,
-          homeBattery: true,
-          cumulativeImportedCapability: 'meter_power.imported',
-          cumulativeExportedCapability: 'meter_power.exported',
-        }).catch(this.error);
-      }
-    });
-
     if (this.hasCapability('battery_control_mode')) {
       this.registerCapabilityListener('battery_control_mode', async (value) => {
         this.log('battery_control_mode changed to:', value);
