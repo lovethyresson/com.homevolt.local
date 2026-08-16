@@ -12,7 +12,7 @@
     "fr": "L'énergie domestique à portée de main",
     "es": "Energía para el hogar al alcance de tu mano"
   },
-  "version": "1.7.0",
+  "version": "1.7.1",
   "sdk": 3,
   "compatibility": ">=12.13.0",
   "author": {
@@ -1152,12 +1152,12 @@
         },
         "measure_power.target_power": {
           "title": {
-            "en": "Target Power",
-            "nl": "Doelvermogen",
-            "de": "Zielleistung",
-            "fr": "Puissance cible",
-            "es": "Potencia objetivo",
-            "sv": "Måleffekt"
+            "en": "Target Power (legacy)",
+            "nl": "Doelvermogen (verouderd)",
+            "de": "Zielleistung (veraltet)",
+            "fr": "Puissance cible (obsolète)",
+            "es": "Potencia objetivo (heredado)",
+            "sv": "Måleffekt (äldre)"
           }
         },
         "meter_power.exported": {
