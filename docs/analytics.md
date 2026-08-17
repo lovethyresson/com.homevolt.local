@@ -82,7 +82,7 @@ should ever be suppressed.
 | `Ran THEN Card` | A Flow action card ran | `card`, `ok` |
 | `Checked AND Card` | A Flow condition card was evaluated | `card`, `ok`, `result` |
 | `Changed Capability` | A capability was written from outside the app | `capability`, plus `control_mode` / `direction` / `applied` |
-| `Changed Device Set` | A device was added or removed | `action`, `driver` |
+| `Changed Device Set` | A device was added or removed | `action`, `role` |
 | `Completed Detection` | A pairing or repair attempt finished | `mode`, `method`, `found`, `found_nothing` |
 | `Lost Connection` | The battery became unreachable | `cause`, `reason` |
 | `Restored Connection` | It became reachable again | — |
@@ -135,6 +135,13 @@ obvious ones:
 - **`op_state`, not `code`.** The project defines `code` as a numeric Nibe alarm code. This app's
   equivalent is a free-form firmware string, and one property cannot usefully be both a number and
   a string.
+- **`role`, not `driver`.** The project already has `role` for "which part of the installation did
+  this happen on" — a Nibe pump pairs as up to six function devices (`main`, `heating`, `hotwater`,
+  `pool`, `cooling`, `solar`). This app's drivers are the same idea, so they reuse the name with
+  bare values rather than raw driver ids: `battery`, `grid`, and `solar`. `solar` then means the
+  same thing in both apps. Note `grid` vs `solar` is decided by device *class*, not driver — the
+  `homevolt-sensor` driver hosts both the grid sensor and solar sensors paired before solar got its
+  own driver.
 - **`control_mode`, not `mode`.** The project defines `mode` as `pair`/`repair` on
   `Completed Detection`, which this app also uses that way. The `homey`/`partner` control mode
   needs its own name rather than a second, unrelated value set on `mode`.

@@ -330,11 +330,14 @@ Things that are not obvious from the code:
   command or the watt value.
 - **A property name means the same thing in every app, or it is useless.** Because one project
   serves several apps, check the project's existing taxonomy before adding a property — a name that
-  already exists must keep its meaning *and its type*. Two names here are deliberately not the
-  obvious ones for this reason: `op_state` rather than `code` (the project's `code` is a numeric
-  Nibe alarm code; this is a free-form string), and `control_mode` rather than `mode` (the
-  project's `mode` is `pair`/`repair`, which this app also uses on `Completed Detection`). Both
-  collisions were shipped and caught in review before release — read the plan first, not after.
+  already exists must keep its meaning *and its type*, and a concept that already has a name must
+  reuse it. Three names here are deliberately not the obvious ones: `op_state` rather than `code`
+  (the project's `code` is a numeric Nibe alarm code; this is a free-form string), `control_mode`
+  rather than `mode` (the project's `mode` is `pair`/`repair`, which this app also uses on
+  `Completed Detection`), and `role` rather than `driver` (the project's `role` already means
+  "which part of the installation" — Nibe's six function devices — so this app's drivers reuse it
+  with bare values like `battery`, not raw driver ids; `solar` then means the same in both apps).
+  All three were shipped and caught in review — read the plan first, not after.
 - Flow **trigger** cards are not instrumented, and `battery_status_changed` could not be even if
   we wanted to: Homey auto-runs a trigger card whose id is `<capability_id>_changed` when
   `setCapabilityValue()` is called for a **custom** capability, so that card fires without any app

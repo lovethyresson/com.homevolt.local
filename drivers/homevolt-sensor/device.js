@@ -1,5 +1,6 @@
 const { Device } = require('homey');
 const fetch = require('node-fetch');
+const { track } = require('../../lib/analytics');
 
 class HomevoltSensorDevice extends Device {
   onDiscoveryResult(discoveryResult) {
@@ -219,8 +220,28 @@ class HomevoltSensorDevice extends Device {
     this.setAvailable().catch(this.error);
   }
 
+  /**
+   * Which part of the installation this device is, for the anonymous device-set events.
+   *
+   * This driver hosts two different things: the grid sensor it was written for, and solar sensors
+   * paired before solar moved to the dedicated homevolt-solar-panel driver - those stay here and
+   * are patched to class 'solarpanel' by migrateLegacySolarDevice(). The class is therefore what
+   * distinguishes them, not the driver id.
+   *
+   * 'solar' is deliberately the same value com.nibe.local uses for its solar function device, so
+   * the shared Amplitude project can answer "how many installs have solar?" across both apps.
+   */
+  analyticsRole() {
+    return this.getClass() === 'solarpanel' ? 'solar' : 'grid';
+  }
+
+  async onAdded() {
+    track('Changed Device Set', { action: 'added', role: this.analyticsRole() });
+  }
+
   async onDeleted() {
     this.log(`Sensor device deleted: ${this.getName()}`);
+    track('Changed Device Set', { action: 'removed', role: this.analyticsRole() });
     if (this.pollingTimer) clearInterval(this.pollingTimer);
   }
 }

@@ -728,7 +728,7 @@ reportOpState(opState) {
    * restart, so it cannot tell a new install from a reboot, and this can.
    */
   async onAdded() {
-    track('Changed Device Set', { action: 'added', driver: 'homevolt-battery' });
+    track('Changed Device Set', { action: 'added', role: 'battery' });
   }
 
   /**
@@ -736,7 +736,7 @@ reportOpState(opState) {
    */
   async onDeleted() {
     this.log('Device deleted, stopping polling');
-    track('Changed Device Set', { action: 'removed', driver: 'homevolt-battery' });
+    track('Changed Device Set', { action: 'removed', role: 'battery' });
     if (this.pollingTimer) {
         clearInterval(this.pollingTimer);
     }

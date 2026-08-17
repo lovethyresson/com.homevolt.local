@@ -1,4 +1,5 @@
 const { Device } = require('homey');
+const { track } = require('../../lib/analytics');
 
 class HomevoltSolarPanelDevice extends Device {
   onDiscoveryResult(discoveryResult) {
@@ -159,8 +160,15 @@ class HomevoltSolarPanelDevice extends Device {
     this.setAvailable().catch(this.error);
   }
 
+  // 'solar' matches both the legacy solar sensors still living on homevolt-sensor and
+  // com.nibe.local's solar function device, so the value means one thing across the project.
+  async onAdded() {
+    track('Changed Device Set', { action: 'added', role: 'solar' });
+  }
+
   async onDeleted() {
     this.log(`Solar panel device deleted: ${this.getName()}`);
+    track('Changed Device Set', { action: 'removed', role: 'solar' });
     if (this.pollingTimer) clearInterval(this.pollingTimer);
   }
 }
