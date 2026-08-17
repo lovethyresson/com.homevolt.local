@@ -304,6 +304,13 @@ Anonymous, opt-in product analytics via Amplitude. The whole surface is
 source-of-truth privacy document and must be updated whenever an event or property changes** — it
 is the only record of what leaves the device, so it is only true if it is maintained.
 
+**[docs/analytics-taxonomy.md](docs/analytics-taxonomy.md) governs every name and type, and is
+byte-identical to a copy in `com.nibe.local`.** Read it *before* adding, renaming or retyping any
+event or property, and never edit it in one repo alone — the two copies drifting is the failure it
+exists to prevent, and a name that means two things in the shared project cannot be fixed after the
+fact (see "A property name means the same thing in every app" below). If it looks wrong, fix it in
+both repos in the same change, or leave it and say so.
+
 Things that are not obvious from the code:
 
 - **The Amplitude project is shared with `com.nibe.local`** (and any future Homey app by the same
@@ -323,8 +330,23 @@ Things that are not obvious from the code:
   docs/analytics.md); do not "fix" it by deriving a shared id from the Homey id without treating
   it as the privacy-posture change that it is.
 - **Anything fired from the poll loop must be edge-triggered.** Polling defaults to 5 seconds, so
-  a per-poll event is ~720 events an hour per device. `reportConnectionState()` and
-  `reportOpState()` both guard on a stored last value for this reason.
+  a per-poll event is ~720 events an hour per device. Three things are called from the poll path and
+  all three guard on a stored last value for this reason: `trackConnectionState()` (in
+  lib/analytics.js, shared by all three drivers — reachability is per device, so the last state is
+  kept on the device object), `reportOpState()` in the battery device, and `noteFirmwareVersion()`
+  in app.js, which re-sends the install profile only when the firmware string actually changes.
+- **The install profile is assembled app-side, not per driver.** `syncInstallProfile()` in app.js
+  enumerates devices across all three drivers, so the profile is the same whichever are paired; each
+  device calls it at the end of `onInit` and passes itself, since a device may not be in
+  `driver.getDevices()` yet during its own init. It used to be sent from the battery device's
+  `initSettings()`, which meant a sensor-only install sent no profile at all. `com.nibe.local` does
+  the same job in a driver-level `syncInstallProfile()` because it has one driver hosting all six
+  roles — that shape does not transfer here.
+- **`firmware` is `ems[0].ems_info.fw_version`** from `ems.json` (`v31.3-6-gbe336a` on the author's
+  unit, verified 2026-08-17; the same value is at `ems_status.ems_info.fw_version` in `status.json`).
+  Not `ecu_version`, which is an empty string on that unit, and not the ESP/EFR build ids under
+  `status.json`'s `firmware` object, which are build hashes rather than a version. Sent raw. The
+  inverter and BMS serial numbers sit in the same objects — never send those.
 - **Never send raw `cmd` strings.** `buildScheduleCommand()` output embeds setpoints and wall-clock
   timestamps. Events carry the flow card id and, at most, a direction — never the assembled
   command or the watt value.

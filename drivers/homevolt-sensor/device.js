@@ -1,6 +1,6 @@
 const { Device } = require('homey');
 const fetch = require('node-fetch');
-const { track } = require('../../lib/analytics');
+const { track, trackConnectionState } = require('../../lib/analytics');
 
 class HomevoltSensorDevice extends Device {
   onDiscoveryResult(discoveryResult) {
@@ -52,6 +52,10 @@ class HomevoltSensorDevice extends Device {
 
     await this.setAvailable();
     this.startPolling();
+
+    // What this install *is*, sent from every driver rather than only from the battery: an install
+    // with just a grid sensor paired used to send no profile at all. Debounced app-side.
+    this.homey.app.syncInstallProfile(this);
   }
 
   /**
@@ -101,6 +105,13 @@ class HomevoltSensorDevice extends Device {
       if (!data || !Array.isArray(data.sensors)) {
         throw new Error('Missing sensors array');
       }
+
+      // Reachability is about the hub, so it is settled here - a payload arrived and parsed. The
+      // "no matching sensor in the payload" paths below take the device offline without this being
+      // a connection failure, and they return early, so reporting later would miss them.
+      // Edge-triggered inside both calls; polling runs every 5 seconds by default.
+      trackConnectionState(this, true, this.analyticsRole());
+      this.homey.app.noteFirmwareVersion(data);
 
       // Robust matching: firmware payloads vary (`function`, `type`, sometimes slightly different names)
       // "solar" only occurs for legacy devices; see migrateLegacySolarDevice().
@@ -171,6 +182,7 @@ class HomevoltSensorDevice extends Device {
       this.updateCapabilities(sensorData);
     } catch (error) {
       this.log('Error fetching sensor data:', error.message);
+      trackConnectionState(this, false, this.analyticsRole());
       await this.setUnavailable(`Error fetching data: ${error.message}`);
     }
   }
@@ -221,7 +233,8 @@ class HomevoltSensorDevice extends Device {
   }
 
   /**
-   * Which part of the installation this device is, for the anonymous device-set events.
+   * Which part of the installation this device is, for every device-scoped analytics event and for
+   * the install profile's `roles` set.
    *
    * This driver hosts two different things: the grid sensor it was written for, and solar sensors
    * paired before solar moved to the dedicated homevolt-solar-panel driver - those stay here and

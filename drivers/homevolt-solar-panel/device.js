@@ -1,5 +1,5 @@
 const { Device } = require('homey');
-const { track } = require('../../lib/analytics');
+const { track, trackConnectionState } = require('../../lib/analytics');
 
 class HomevoltSolarPanelDevice extends Device {
   onDiscoveryResult(discoveryResult) {
@@ -42,6 +42,10 @@ class HomevoltSolarPanelDevice extends Device {
 
     await this.setAvailable();
     this.startPolling();
+
+    // What this install *is*, sent from every driver rather than only from the battery, so a home
+    // without a battery paired still has a profile. Debounced app-side.
+    this.homey.app.syncInstallProfile(this);
   }
 
   startPolling() {
@@ -68,6 +72,13 @@ class HomevoltSolarPanelDevice extends Device {
       if (!data || !Array.isArray(data.sensors)) {
         throw new Error('Missing sensors array');
       }
+
+      // Reachability is about the hub, so it is settled here - a payload arrived and parsed. The
+      // paths below deliberately keep this device online with zeros when the feed omits solar (e.g.
+      // at night), which is not a connection failure, and they return early. Edge-triggered inside
+      // both calls; polling runs every 5 seconds by default.
+      trackConnectionState(this, true, this.analyticsRole());
+      this.homey.app.noteFirmwareVersion(data);
 
       // Robust matching: firmware payloads vary (`function`, `type`, sometimes slightly different names)
       const normalize = (v) => String(v || '').toLowerCase();
@@ -113,6 +124,7 @@ class HomevoltSolarPanelDevice extends Device {
       this.updateCapabilities(sensorData);
     } catch (error) {
       this.log('Error fetching sensor data:', error.message);
+      trackConnectionState(this, false, this.analyticsRole());
       await this.setUnavailable(`Error fetching data: ${error.message}`);
     }
   }
@@ -160,15 +172,25 @@ class HomevoltSolarPanelDevice extends Device {
     this.setAvailable().catch(this.error);
   }
 
-  // 'solar' matches both the legacy solar sensors still living on homevolt-sensor and
-  // com.nibe.local's solar function device, so the value means one thing across the project.
+  /**
+   * Which part of the installation this device is, for every device-scoped analytics event and for
+   * the install profile's `roles` set.
+   *
+   * 'solar' matches both the legacy solar sensors still living on homevolt-sensor (which reach the
+   * same value through their device class - see analyticsRole() there) and com.nibe.local's solar
+   * function device, so the value means one thing across the shared project.
+   */
+  analyticsRole() {
+    return 'solar';
+  }
+
   async onAdded() {
-    track('Changed Device Set', { action: 'added', role: 'solar' });
+    track('Changed Device Set', { action: 'added', role: this.analyticsRole() });
   }
 
   async onDeleted() {
     this.log(`Solar panel device deleted: ${this.getName()}`);
-    track('Changed Device Set', { action: 'removed', role: 'solar' });
+    track('Changed Device Set', { action: 'removed', role: this.analyticsRole() });
     if (this.pollingTimer) clearInterval(this.pollingTimer);
   }
 }

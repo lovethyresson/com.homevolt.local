@@ -3,7 +3,7 @@
 const Homey = require('homey');
 const fetch = require('node-fetch');
 const {
-  CONSENT_SETTING, initAnalytics, refreshConsent, appVersion, track,
+  CONSENT_SETTING, initAnalytics, refreshConsent, appVersion, track, reportInstallProfile,
 } = require('./lib/analytics');
 
 // Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
@@ -146,6 +146,81 @@ module.exports = class HomevoltApp extends Homey.App {
       this.error('Could not read host facts for the install profile', error);
       return {};
     }
+  }
+
+  /**
+   * Send the anonymous install profile: what this install *is*, as opposed to what it did.
+   *
+   * Lives on the app rather than on a driver, which is where com.nibe.local puts its equivalent.
+   * That app has one driver hosting all six roles, so a driver knows the whole installation; here
+   * the three drivers each know a third of it, and the profile has to be the same whichever
+   * drivers happen to be paired. This used to be called from the battery device's initSettings(),
+   * which meant an install with only a grid sensor paired sent no profile at all.
+   *
+   * Synchronous on purpose: it reads already-known state, never the network. `firmware` comes from
+   * the latch below, which every driver's poll feeds. Debounced inside reportInstallProfile(), so
+   * several devices initialising at once collapse into one identify - and since every call
+   * assembles the same install-wide snapshot rather than a caller-scoped one, the last snapshot
+   * inside the debounce window is the complete one.
+   *
+   * @param {object} [caller] - the device asking for the sync, if any. Counted explicitly because
+   *   a device calling this from its own onInit may not be in driver.getDevices() yet, and a
+   *   single-device install would otherwise report an empty role set.
+   */
+  syncInstallProfile(caller) {
+    try {
+      const devices = [];
+      for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+        devices.push(...driver.getDevices());
+      }
+      if (caller && !devices.includes(caller)) devices.push(caller);
+
+      // A set, not a list: two batteries are still one `battery` role, and `roles` answers "which
+      // parts does this install have?". Sorted so the same install always sends the same array.
+      const roles = [...new Set(devices
+        .filter(device => typeof device.analyticsRole === 'function')
+        .map(device => device.analyticsRole()))].sort();
+
+      // Battery-specific facts come from a battery device when there is one; duck-typed for the
+      // same reason restartDevicePolling() is, so a fourth driver needs no change here. The first
+      // such device wins: a battery device already sums packs and rated power across every EMS
+      // entry its own hub reports, and two separate hubs in one home is not a shape this profile
+      // tries to describe (nor one `control_mode` could describe, since each hub has its own).
+      const source = devices.find(device => typeof device.analyticsInstallFacts === 'function');
+
+      reportInstallProfile({
+        roles,
+        firmware: this.firmwareVersion,
+        ...(source ? source.analyticsInstallFacts() : {}),
+        ...this.hostFacts(),
+      });
+    } catch (error) {
+      this.error('Could not collect the install profile', error);
+    }
+  }
+
+  /**
+   * Remember the firmware version seen in an ems.json payload, and resync the install profile when
+   * it changes.
+   *
+   * `ems[0].ems_info.fw_version` ('v31.3-6-gbe336a' on the author's unit) is the EMS firmware, and
+   * it is what decides which console commands and schedule parameters exist - the thing worth
+   * knowing when a report says a card does not work. Verified against a real unit on 2026-08-17:
+   * the same value appears in status.json as `ems_status.ems_info.fw_version`, so either endpoint
+   * would do; ems.json is the one all three drivers already poll. Deliberately not used instead:
+   * `ecu_version`, which is an empty string on that unit, and the ESP/EFR build ids under
+   * status.json's `firmware` object, which are build hashes rather than a version. Sent raw, never
+   * mapped to a marketing name - a wrong guess here is unfixable, one in Amplitude is reversible.
+   *
+   * Called from every poll of every driver, so it must stay edge-triggered: it only resyncs when
+   * the string actually changes, i.e. on the first successful poll and on a firmware upgrade.
+   */
+  noteFirmwareVersion(data) {
+    const version = data?.ems?.[0]?.ems_info?.fw_version;
+    if (typeof version !== 'string' || !version) return;
+    if (version === this.firmwareVersion) return;
+    this.firmwareVersion = version;
+    this.syncInstallProfile();
   }
 
   getPollingInterval() {
