@@ -97,5 +97,8 @@
   },
   "1.7.1": {
     "en": "Target Power now always shows what your battery is actually aiming for. While your energy partner is in control it follows the battery and records the changes in Insights; when Homey is in control the slider is what counts. Before, it kept showing the last value Homey sent, which could be months out of date. The slider now matches your battery's own rated power, so it no longer lets you ask for more than the battery can deliver. The old duplicate reading is renamed \"Target Power (legacy)\", hidden from the device and no longer updated - its history stays in Insights, but if you have Flows using its \"becomes greater/less than\" cards, please move them to Target Power."
+  },
+  "1.7.2": {
+    "en": "Improvements to the optional anonymous usage statistics. Nothing changes in how the app reads or controls your battery."
   }
 }
