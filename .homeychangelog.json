@@ -100,5 +100,8 @@
   },
   "1.7.2": {
     "en": "Improvements to the optional anonymous usage statistics. Nothing changes in how the app reads or controls your battery."
+  },
+  "1.7.3": {
+    "en": "Tweaks to analytics reporting."
   }
 }
