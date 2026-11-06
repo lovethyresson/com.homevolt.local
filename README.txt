@@ -22,5 +22,6 @@ CONSIDERATIONS & LIMITATIONS
 - This is an unsanctioned, non supported API and may break at any point in time.
 - This app is not affiliated with Homevolt/Tibber/Polarium.
 - Auth is not supported. Password needs to be disabled on the local web server.
-- No scheduling support (yet).
+- Scheduling is supported through Flow cards (charge/discharge now or over a planned time window, measured at the battery or at the grid connection point), but the app has no schedule editor of its own.
 - Pairing (mdns discovery) parses the hostname to detect a Homevolt device and serial number. If you change this pairing will likely fail.
+- If mDNS discovery can't find your device (e.g. it's on a different subnet than Homey), you can enter its IP address manually on the pairing screen. If that IP later changes, use "Repair" on the device (in its advanced settings) to update it without re-pairing. The new IP is kept across app and Homey restarts. A fixed IP (DHCP reservation) in your router avoids the problem altogether.
