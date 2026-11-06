@@ -30,7 +30,8 @@ class HomevoltSolarPanelDevice extends Device {
     this.log(`Initializing solar panel device: ${this.getName()}`);
     this.log(`[homevolt-solar-panel] Native driver, class '${this.getClass()}' declared in manifest - no runtime overrides needed`);
 
-    this.ip = this.getData().ip;
+    // `data` is fixed at pairing, so an IP changed via Repair is kept in the store and wins.
+    this.ip = this.getStoreValue('ip') || this.getData().ip;
 
     // Initial fetch (non-blocking)
     this.fetchData().catch(this.error);

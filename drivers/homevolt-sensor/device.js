@@ -33,7 +33,8 @@ class HomevoltSensorDevice extends Device {
     // "solar" only occurs for devices paired before solar moved to the
     // dedicated homevolt-solar-panel driver. New pairings are always "grid".
     this.type = this.getData().type;
-    this.ip = this.getData().ip;
+    // `data` is fixed at pairing, so an IP changed via Repair is kept in the store and wins.
+    this.ip = this.getStoreValue('ip') || this.getData().ip;
 
     if (this.type === 'solar') {
       this.log('[homevolt-sensor] LEGACY solar device detected - applying patched solarpanel/energy overrides');

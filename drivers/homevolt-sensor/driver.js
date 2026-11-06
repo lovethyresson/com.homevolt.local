@@ -90,6 +90,9 @@ class HomevoltSensorDriver extends Homey.Driver {
         throw new Error(`Could not reach a Homevolt device at ${address}`);
       }
 
+      // Persisted, not just set in memory: onInit re-reads the IP on every app restart, and
+      // `data.ip` cannot be changed, so an in-memory-only update reverted to the pairing IP.
+      await device.setStoreValue('ip', address);
       device.ip = address;
       device.log(`IP address updated via repair to ${address}`);
     });

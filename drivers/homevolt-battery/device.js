@@ -274,7 +274,8 @@ class HomevoltBatteryDevice extends Device {
   async onInit() {
     this.deviceName = this.getName();
     this.id = this.getData().id;
-    this.ip = this.getData().ip;
+    // `data` is fixed at pairing, so an IP changed via Repair is kept in the store and wins.
+    this.ip = this.getStoreValue('ip') || this.getData().ip;
 
     this.log(`Initializing battery device: ${this.deviceName} (id: ${this.id} at ${this.ip})`);
 

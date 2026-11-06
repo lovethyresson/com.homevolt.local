@@ -117,6 +117,9 @@ class HomevoltBatteryDriver extends Homey.Driver {
         mode: 'repair', method: 'manual', found: 1, found_nothing: false,
       });
 
+      // Persisted, not just set in memory: onInit re-reads the IP on every app restart, and
+      // `data.ip` cannot be changed, so an in-memory-only update reverted to the pairing IP.
+      await device.setStoreValue('ip', address);
       device.ip = address;
       device.log(`IP address updated via repair to ${address}`);
     });
