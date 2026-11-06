@@ -103,5 +103,8 @@
   },
   "1.7.3": {
     "en": "Tweaks to analytics reporting."
+  },
+  "1.7.4": {
+    "en": "Fixed an IP address changed with \"Repair\" reverting to the old one after the app or Homey restarted. If you have repaired a device before, repair it once more after updating. Updated the Homey SDK."
   }
 }
