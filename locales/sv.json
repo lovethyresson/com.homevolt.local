@@ -9,5 +9,12 @@
   "app_settings_analytics_label": "Skicka anonym användningsdata",
   "app_settings_analytics_hint": "Hjälper till att förbättra appen. Mätvärden, IP-adresser, serienummer och enhetsnamn skickas aldrig.",
   "battery_control_mode.local": "Lokal",
-  "battery_control_mode.remote": "Fjärr"
+  "battery_control_mode.remote": "Fjärr",
+  "auth": {
+    "required": "Denna Homevolt kräver inloggning. Ange enhetens lösenord (QR-koden på enheten) eller en åtkomsttoken i enhetens inställningar.",
+    "rejected": "Homevolt avvisade lösenordet eller åtkomsttoken. Kontrollera det i enhetens inställningar.",
+    "rate_limited": "Homevolt blockerar inloggning efter för många försök. Försöker igen om __seconds__ s.",
+    "notification_required": "Din Homevolt kräver nu inloggning, så Homey kan inte längre läsa av den. Öppna Homevolt-enheten i Homey, gå till dess inställningar och ange enhetens lösenord (QR-koden på enheten) eller en åtkomsttoken.",
+    "notification_rejected": "Din Homevolt avvisade lösenordet eller åtkomsttoken som är sparad i Homey, så Homey kan inte längre läsa av den. Öppna Homevolt-enheten i Homey och uppdatera det i enhetens inställningar."
+  }
 }

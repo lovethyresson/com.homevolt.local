@@ -1,5 +1,6 @@
 const { Device } = require('homey');
 const { track, trackConnectionState } = require('../../lib/analytics');
+const { SECRET_SETTING, reportAuthProblem, onSecretSettingChanged } = require('../../lib/auth');
 
 class HomevoltSolarPanelDevice extends Device {
   onDiscoveryResult(discoveryResult) {
@@ -68,7 +69,7 @@ class HomevoltSolarPanelDevice extends Device {
 
   async fetchData() {
     try {
-      const data = await this.homey.app.getStatus({ address: this.ip });
+      const data = await this.homey.app.getStatus({ address: this.ip, secret: this.secret() });
 
       if (!data || !Array.isArray(data.sensors)) {
         throw new Error('Missing sensors array');
@@ -79,6 +80,7 @@ class HomevoltSolarPanelDevice extends Device {
       // at night), which is not a connection failure, and they return early. Edge-triggered inside
       // both calls; polling runs every 5 seconds by default.
       trackConnectionState(this, true, this.analyticsRole());
+      this.authProblem = null;
       this.homey.app.noteFirmwareVersion(data);
 
       // Robust matching: firmware payloads vary (`function`, `type`, sometimes slightly different names)
@@ -124,10 +126,20 @@ class HomevoltSolarPanelDevice extends Device {
 
       this.updateCapabilities(sensorData);
     } catch (error) {
-      this.log('Error fetching sensor data:', error.message);
       trackConnectionState(this, false, this.analyticsRole());
+      if (await reportAuthProblem(this, error)) return;
+      this.log('Error fetching sensor data:', error.message);
       await this.setUnavailable(`Error fetching data: ${error.message}`);
     }
+  }
+
+  /** The device password or access token, or '' when sign-in is off. See lib/auth.js. */
+  secret() {
+    return this.getSetting(SECRET_SETTING) || '';
+  }
+
+  async onSettings(event) {
+    await onSecretSettingChanged(this, event);
   }
 
   updateCapabilities(sensorData) {

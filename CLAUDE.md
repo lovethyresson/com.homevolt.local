@@ -27,6 +27,88 @@ published app. Routine success-path logs that would otherwise fire on every sing
 logs (retries, non-OK responses, device error strings) stay unconditional, since those are rare
 and worth seeing even on a live install.
 
+## Device sign-in
+
+Read from the device's own web UI bundle (`GET /main.js`) and probed without credentials against
+the author's unit on 2026-11-12. Nothing here comes from Tibber's published docs, which are older
+and describe HTTP Basic auth (`-u admin:<password>`). The firmware actually in the field asks for
+Bearer:
+
+- With sign-in on, every `*.json`, `/spiffs*` and `/api/*` path answers `401` with
+  `WWW-Authenticate: Bearer realm="device"` and the body `No permission -- see authorization
+  schemes`. `/` and `/main.js` stay open.
+- The credential is `Authorization: Bearer <secret>`. No login request, no session. The secret is
+  either the device password (default: the QR code printed on the device; param
+  `webserver_password`) or an access token made in the device UI. Token scopes are `stream` (live
+  `/ws`), `auth` ("every page the webserver password opens") and `full`. The UI says a token "keeps
+  working when the webserver is turned off" (`webserver_force_enable`).
+- Wrong guesses are rate limited: `429` with `Retry-After` (the UI accepts 1-300 s). Per Tibber's
+  docs, the backoff is exponential and applies to the device, not to the client.
+- With sign-in off, no header is needed. The UI tells the two cases apart by probing first.
+
+**Verified on the author's unit, 2026-11-13** (1.8.0 dev build on Homey): with sign-in on and no
+secret, all three devices went unavailable with the sign-in message; after the device password was
+entered in the battery's settings, all three recovered. `ems.json`, `status.json` and `help`
+fetched with `Authorization: Bearer <password>` have every field and console command the app uses,
+unchanged — sign-in did not change the API. New in that `help`: `webserver` (state, auth and
+endpoints, as `/webserver.json`) and `ws_token <add|list|rm|scopes>` (token management). **Still
+unverified:** access tokens of either scope, tokens with the web server off, the wrong-password
+refusal and 429 path against the real unit, and anything about HTTPS.
+
+How the app maps onto that (all in [lib/auth.js](lib/auth.js) and `HomevoltApp.request()` in app.js):
+
+- **One HTTP path.** `app.request()` is the only code that talks to a hub. `_fetchWithRetry()`
+  (ems.json/status.json) and the battery's `sendBatteryCommand()` (console.json) both go through it.
+  Don't add a second `fetch()` that bypasses it, or that call will miss both the header and the gate.
+- **Empty secret = no header.** This keeps every unit without sign-in on its pre-1.8 behaviour.
+- **401/429 are typed errors**: `AuthError` (`required` = no secret sent, `rejected` = secret sent)
+  and `RateLimitedError`. `getStatus()` rejects with them instead of resolving `null`, because "wrong
+  password" and "unreachable" need different fixes. `null` still means unreachable.
+- **The gate (`_checkAuthGate`) is a safety rule, not an optimisation.** A rejected secret is never
+  sent again until the user re-enters it (`resetAuth()`, from onSettings/repair) or the app restarts.
+  At a 5 s poll, a stale password would otherwise keep the device's backoff running indefinitely and
+  lock the owner out of the device's own web UI as well. A missing secret is retried once a minute,
+  which costs no sign-in attempt and lets a device recover by itself if sign-in is turned off.
+- **One secret per hub, stored on every device.** The `device_password` setting (type `password`)
+  exists on all three drivers. `app.shareSecret()` copies a saved value to every device with the same
+  `ip`, and pairing pre-fills from `app.knownSecret()`. Caches are keyed by address + secret, so a
+  new password never gets an old refusal from the cache.
+- **Existing users:** `_notifyAuthProblem()` sends one timeline notification per address, persisted
+  in the app setting `auth_notified` and cleared on the next success. After recovering, the battery
+  re-runs `initSettings()`/`syncBatteryControlMode()`, because both were refused at init.
+
+## HTTPS
+
+The firmware's `webserver_https_enable` param ("Serve this page over an encrypted connection") is
+the only thing known about it. **No unit with HTTPS on has been seen**, so whether plain HTTP still
+answers, refuses or redirects, which certificate is served, and whether the unit still advertises
+`_http._tcp` over mDNS are all unknown. The code is written not to depend on any of them, and was
+tested against a mock that does each of them (refuse / redirect / both / HTTPS-only, self-signed
+certificate):
+
+- **Detection (`app.detectScheme`, pairing and repair):** `GET /ems.json` over HTTPS first, then
+  HTTP. Any HTTP response counts, 401 included, and no credential is sent, so detection never costs
+  a sign-in attempt. HTTPS wins if both answer. The result goes in the device store (`scheme`) and
+  is passed in the pairing result's `store`.
+- **Runtime switching (`app.request` → `_switchScheme`):** if the known scheme gets a refused or
+  reset connection or a TLS/protocol mismatch, or a redirect to the other scheme, the other scheme is
+  tried once and kept if it answers. Timeouts are not a trigger: an offline hub must not cost two
+  requests per poll. Devices paired before 1.8 have no `scheme` in their store and default to `http`,
+  so they need no migration.
+- **Never follow redirects.** node-fetch 2.7 drops `Authorization` on a redirect that changes
+  protocol (`isSameProtocol`), so a followed http→https redirect makes a correct password look
+  `rejected`. That is why `redirect: 'manual'` is used.
+- **Request bodies must be replayable** (a Buffer, not a stream), because a switch sends the body
+  twice. That is why `sendBatteryCommand()` uses `form.getBuffer()`.
+- **Certificate verification is off** (`rejectUnauthorized: false`): a LAN IP/.local name can't be
+  verified, so nothing could be checked against. Pinning the certificate seen at pairing (trust on
+  first use) would close the impersonation gap, but should only be added once it is known that the
+  firmware keeps one certificate across reboots and updates. A pinned certificate that rotates
+  would take the device offline.
+- **Keep-alive HTTPS agent, max 2 sockets, 30 s idle timeout,** so polling does not do a TLS
+  handshake on the ESP32 every 5 s. Because pooled sockets can be stale, `_send()` retries a
+  `ECONNRESET` once, but only for GET: console commands such as `sched_add` are not idempotent.
+
 ## Local vs. remote control
 
 - `param_get settings_local` / `param_set settings_local <true|false>` (+ `param_store` to persist

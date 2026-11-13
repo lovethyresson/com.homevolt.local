@@ -1,4 +1,7 @@
 const Homey = require('homey');
+const {
+  SECRET_SETTING, SCHEME_STORE, parseAddressArgs, probeHub, pairedDeviceExtras,
+} = require('../../lib/auth');
 
 class HomevoltSolarPanelDriver extends Homey.Driver {
   /**
@@ -41,42 +44,51 @@ class HomevoltSolarPanelDriver extends Homey.Driver {
   async onPair(session) {
     session.setHandler('list_devices', () => this.onPairListDevices());
 
-    session.setHandler('manual_pair', async (ip) => {
-      const address = String(ip || '').trim();
-      if (!address) {
-        throw new Error('Please enter an IP address');
-      }
+    // Read before creating, so a hub with sign-in on is caught here rather than pairing fine and
+    // then sitting unavailable. A hub that cannot be reached at all is still added, as before.
+    session.setHandler('add_discovered', async ({ device, secret: entered } = {}) => {
+      const probe = await probeHub(this.homey, device.data.ip, entered);
+      if (probe.needsSecret) return probe;
+      return { device: { ...device, ...pairedDeviceExtras(probe) } };
+    });
 
-      const data = await this.homey.app.getStatus({ address });
+    session.setHandler('manual_pair', async (args) => {
+      const { address, secret: entered } = parseAddressArgs(args);
+
+      const probe = await probeHub(this.homey, address, entered);
+      if (probe.needsSecret) return probe;
+      const { data } = probe;
       if (!data || !Array.isArray(data.sensors)) {
         throw new Error(`Could not reach a Homevolt device at ${address}`);
       }
 
-      return {
+      const device = {
         name: 'Solar Sensor',
         data: {
           id: `${address}-solarpanel`,
           ip: address,
         },
       };
+      return { device: { ...device, ...pairedDeviceExtras(probe) } };
     });
   }
 
   /**
    * Repair: lets the user re-enter the IP address of an already-paired
    * device without deleting and re-pairing it (e.g. after a DHCP change on a
-   * subnet mDNS can't reach). See drivers/homevolt-solar-panel/pair/repair_ip.html.
+   * subnet mDNS can't reach), and the device password or access token. See drivers/homevolt-solar-panel/pair/repair_ip.html.
    */
   async onRepair(session, device) {
     session.setHandler('get_ip', async () => device.ip);
 
-    session.setHandler('repair_ip', async (ip) => {
-      const address = String(ip || '').trim();
-      if (!address) {
-        throw new Error('Please enter an IP address');
-      }
+    session.setHandler('repair_ip', async (args) => {
+      const { address, secret: entered } = parseAddressArgs(args);
 
-      const data = await this.homey.app.getStatus({ address });
+      // Repair is a deliberate retry, so whatever the hub refused before is tried again.
+      this.homey.app.resetAuth(address);
+      const probe = await probeHub(this.homey, address, entered, device.secret());
+      if (probe.needsSecret) return probe;
+      const { data, secret, scheme } = probe;
       if (!data || !Array.isArray(data.sensors)) {
         throw new Error(`Could not reach a Homevolt device at ${address}`);
       }
@@ -85,7 +97,16 @@ class HomevoltSolarPanelDriver extends Homey.Driver {
       // `data.ip` cannot be changed, so an in-memory-only update reverted to the pairing IP.
       await device.setStoreValue('ip', address);
       device.ip = address;
-      device.log(`IP address updated via repair to ${address}`);
+      await device.setStoreValue(SCHEME_STORE, scheme);
+      device.log(`IP address updated via repair to ${address} (${scheme})`);
+
+      if (secret !== device.secret()) {
+        await device.setSettings({ [SECRET_SETTING]: secret });
+        await this.homey.app.shareSecret(address, secret, device);
+        device.log('Password/token updated via repair');
+      }
+      device.fetchData().catch(device.error);
+      return { done: true };
     });
   }
 }

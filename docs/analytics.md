@@ -134,7 +134,9 @@ hosts both the grid sensor and solar sensors paired before solar got its own dri
 
 - **`Completed Detection`** is the highest-value event here. `method` distinguishes `mdns` from
   `manual`, and `found_nothing` is the only signal that discovery silently failed on a network the
-  author cannot test against. Somebody typing an IP by hand *is* the finding.
+  author cannot test against. Somebody typing an IP by hand *is* the finding. A manual attempt
+  that the battery refuses for lack of a password is not reported: the battery was found, and
+  `found_nothing: true` would say the opposite. The retry with a password is reported instead.
 
 - **`Lost Connection` / `Restored Connection`** are **edge-triggered** — they fire on the transition
   only. Polling runs every 5 seconds by default, so a device that is off for an hour would

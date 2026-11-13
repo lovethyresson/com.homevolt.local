@@ -9,5 +9,12 @@
     "app_settings_analytics_label": "Send anonymous usage data",
     "app_settings_analytics_hint": "Helps improve the app. Readings, IP addresses, serial numbers and device names are never sent.",
     "battery_control_mode.local": "Local",
-    "battery_control_mode.remote": "Remote"
+    "battery_control_mode.remote": "Remote",
+    "auth": {
+        "required": "This Homevolt requires sign-in. Enter the device password (the QR code on the device) or an access token in the device settings.",
+        "rejected": "The Homevolt rejected the password or access token. Check it in the device settings.",
+        "rate_limited": "The Homevolt is blocking sign-in after too many attempts. Trying again in __seconds__ s.",
+        "notification_required": "Your Homevolt now requires sign-in, so Homey can no longer read it. Open the Homevolt device in Homey, go to its settings and enter the device password (the QR code on the device) or an access token.",
+        "notification_rejected": "Your Homevolt rejected the password or access token saved in Homey, so Homey can no longer read it. Open the Homevolt device in Homey and update it in the device settings."
+    }
 }

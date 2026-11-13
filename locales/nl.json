@@ -9,5 +9,12 @@
   "app_settings_analytics_label": "Anonieme gebruiksgegevens verzenden",
   "app_settings_analytics_hint": "Helpt de app te verbeteren. Metingen, IP-adressen, serienummers en apparaatnamen worden nooit verzonden.",
   "battery_control_mode.local": "Lokaal",
-  "battery_control_mode.remote": "Op afstand"
+  "battery_control_mode.remote": "Op afstand",
+  "auth": {
+    "required": "Deze Homevolt vereist aanmelden. Voer het apparaatwachtwoord (de QR-code op het apparaat) of een toegangstoken in bij de apparaatinstellingen.",
+    "rejected": "De Homevolt heeft het wachtwoord of toegangstoken geweigerd. Controleer het in de apparaatinstellingen.",
+    "rate_limited": "De Homevolt blokkeert aanmelden na te veel pogingen. Nieuwe poging over __seconds__ s.",
+    "notification_required": "Je Homevolt vereist nu aanmelden, waardoor Homey hem niet meer kan uitlezen. Open het Homevolt-apparaat in Homey, ga naar de instellingen en voer het apparaatwachtwoord (de QR-code op het apparaat) of een toegangstoken in.",
+    "notification_rejected": "Je Homevolt heeft het in Homey opgeslagen wachtwoord of toegangstoken geweigerd, waardoor Homey hem niet meer kan uitlezen. Open het Homevolt-apparaat in Homey en werk het bij in de apparaatinstellingen."
+  }
 }

@@ -1,7 +1,9 @@
 const { Device } = require('homey');
-const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { track, trackedRunListener, trackConnectionState } = require('../../lib/analytics');
+const {
+  SECRET_SETTING, isAuthProblem, reportAuthProblem, onSecretSettingChanged,
+} = require('../../lib/auth');
 
 // Set by Homey only for `homey app run` (dev) sessions, not on installed/published apps.
 const DEBUG = process.env.DEBUG === '1';
@@ -290,7 +292,7 @@ class HomevoltBatteryDevice extends Device {
       cardConditionBatteryStatus.registerRunListener(trackedRunListener('condition', 'battery_status', 'battery', async (args, state) => {
         const device = args.device;
         try {
-          const data = await device.homey.app.getStatus({ address: device.ip });
+          const data = await device.homey.app.getStatus({ address: device.ip, secret: device.secret() });
           const raw = data?.ems?.[0]?.op_state_str;
           const batteryStatus = typeof raw === 'string' ? raw.toLowerCase() : 'unknown';
           device.log(`Condition card executed. Card: ${args.battery_status}, Battery: ${batteryStatus}`);
@@ -582,7 +584,7 @@ restartPolling(newInterval) {
  */
 async fetchData() {
   try {
-    const data = await this.homey.app.getStatus({ address: this.ip });
+    const data = await this.homey.app.getStatus({ address: this.ip, secret: this.secret() });
     // getStatus resolves to null rather than rejecting once _fetchWithRetry has exhausted its
     // retries, so without this an unreachable battery surfaces as a TypeError on data.ems[0]
     // deep inside updateCapabilities rather than as the connection failure it actually is.
@@ -590,14 +592,23 @@ async fetchData() {
       throw new Error('No EMS data in response');
     }
     this.updateCapabilities(data);
+    // The first good poll after a sign-in refusal: onInit's one-shot reads (settings page, control
+    // mode) were refused too, so redo them now that the hub answers - otherwise they stay at their
+    // defaults until the next app restart.
+    if (this.authProblem) {
+      this.authProblem = null;
+      this.initSettings().catch(this.error);
+      this.syncBatteryControlMode().catch(this.error);
+    }
     // Both are edge-triggered inside (see lib/analytics.js and app.js), so neither adds an event
     // per poll: this runs every 5 seconds by default.
     trackConnectionState(this, true, this.analyticsRole());
     this.homey.app.noteFirmwareVersion(data);
 
   } catch (error) {
-    this.log('Error fetching data:', error.message);
     trackConnectionState(this, false, this.analyticsRole());
+    if (await reportAuthProblem(this, error)) return;
+    this.log('Error fetching data:', error.message);
     await this.setUnavailable('Error fetching data');
   }
 }
@@ -787,8 +798,8 @@ reportOpState(opState) {
   async initSettings() {
     try {
       // Fetch data safely
-      const data = await this.homey.app.getStatus({ address: this.ip }) || {};
-      const system = await this.homey.app.getSystem({ address: this.ip }) || {};
+      const data = await this.homey.app.getStatus({ address: this.ip, secret: this.secret() }) || {};
+      const system = await this.homey.app.getSystem({ address: this.ip, secret: this.secret() }) || {};
 
       // Aggregate values across multiple EMS entries AND battery packs
       const emsList = Array.isArray(data?.ems) ? data.ems : [];
@@ -905,6 +916,13 @@ reportOpState(opState) {
         // If we reach here for this cmd, continue to next variant
         this.log(`syncBatteryControlMode: '${cmd}' returned no parsable value.`);
       } catch (e) {
+        // Refused by sign-in: the other commands would be refused too, and defaulting to
+        // 'partner' below would show a mode nobody set. fetchData() re-runs this sync once the
+        // battery accepts us again.
+        if (isAuthProblem(e)) {
+          this.log(`syncBatteryControlMode: skipped, ${e.message}`);
+          return false;
+        }
         // sendBatteryCommand throws for HTTP errors; swallow and try next variant
         this.log(`syncBatteryControlMode: '${cmd}' failed: ${e.message}`);
         continue;
@@ -917,16 +935,31 @@ reportOpState(opState) {
     return false;
   }
 
+  /** The device password or access token, or '' when sign-in is off. See lib/auth.js. */
+  secret() {
+    return this.getSetting(SECRET_SETTING) || '';
+  }
+
+  async onSettings(event) {
+    await onSecretSettingChanged(this, event);
+  }
+
   async sendBatteryCommand(cmd) {
     const form = new FormData();
     form.append('cmd', cmd);
     const startedAt = Date.now();
 
     if (DEBUG) this.log(`[console] POST cmd='${cmd}'`);
-    const res = await fetch(`http://${this.ip}/console.json`, {
+    // Through the app so it carries the same credential, and the same 401/429 handling, as the
+    // polls. No timeout, as before: some console commands are slow.
+    const res = await this.homey.app.request(this.ip, '/console.json', {
+      secret: this.secret(),
       method: 'POST',
-      body: form,
+      // A buffer, not the form stream: request() may send it twice if the hub's HTTP/HTTPS
+      // setting changed and it has to switch scheme.
+      body: form.getBuffer(),
       headers: form.getHeaders(),
+      timeoutMs: 0,
     });
 
     const resultText = await res.text();

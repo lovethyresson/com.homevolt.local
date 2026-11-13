@@ -27,8 +27,21 @@
   }
   .divider span { margin: 0 10px; }
   .hint { color: #888; font-size: 0.85em; margin: 6px 0 14px; }
+  .secret-section { margin: 0 0 20px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
+  .secret-message { font-weight: 600; }
+  #device-secret { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
   #manual-ip { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
 </style>
+
+<!-- Shown only when the Homevolt turns out to require sign-in. HTTP vs HTTPS, and whether sign-in
+     is on at all, are detected; the password is the one thing that has to be asked for. -->
+<div id="secret-section" class="secret-section" hidden>
+  <p class="secret-message" id="secret-message"></p>
+  <label for="device-secret">Device password or access token</label>
+  <input type="password" id="device-secret" autocomplete="off" />
+  <p class="hint">The default password is the QR code printed on the device. An access token created in the Homevolt's web interface works too.</p>
+  <button type="button" id="secret-btn" class="homey-button-primary-full">Continue</button>
+</div>
 
 <p>Devices found on your network:</p>
 <div class="device-list" id="device-list"></div>
@@ -51,6 +64,49 @@
       });
   }
 
+  function secret() {
+    return document.getElementById('device-secret').value.trim();
+  }
+
+  // The attempt waiting for a password, so "Continue" can repeat it with one.
+  let pending = null;
+
+  // Every way of adding a device goes through here. The app detects HTTP/HTTPS and whether sign-in
+  // is on; when it is and no saved password works, it answers { needsSecret, message } and the
+  // password field is shown instead of an error. Otherwise it answers { device }, which already
+  // carries the detected scheme and the password into the new device.
+  function attempt(event, payload) {
+    pending = () => attempt(event, { ...payload, secret: secret() });
+    Homey.showLoadingOverlay();
+    Homey.emit(event, payload)
+      .then((result) => {
+        if (result && result.needsSecret) {
+          Homey.hideLoadingOverlay();
+          document.getElementById('secret-message').textContent = result.message;
+          document.getElementById('secret-section').hidden = false;
+          document.getElementById('device-secret').focus();
+          return;
+        }
+        addDevice(result.device);
+      })
+      .catch((err) => {
+        Homey.hideLoadingOverlay();
+        Homey.alert(err.message || err);
+      });
+  }
+
+  function addDiscovered(device) {
+    attempt('add_discovered', { device, secret: secret() });
+  }
+
+  document.getElementById('secret-btn').addEventListener('click', () => {
+    if (!secret()) {
+      Homey.alert('Please enter the password or access token');
+      return;
+    }
+    if (pending) pending();
+  });
+
   function renderDevices(devices) {
     const list = document.getElementById('device-list');
     list.innerHTML = '';
@@ -58,7 +114,7 @@
       const row = document.createElement('div');
       row.className = 'device-row';
       row.innerHTML = `<div><div class="device-name">${device.name}</div><div class="device-ip">${device.data.ip}</div></div>`;
-      row.addEventListener('click', () => addDevice(device));
+      row.addEventListener('click', () => addDiscovered(device));
       list.appendChild(row);
     });
     if (!devices || devices.length === 0) {
@@ -76,12 +132,6 @@
       Homey.alert('Please enter an IP address');
       return;
     }
-    Homey.showLoadingOverlay();
-    Homey.emit('manual_pair', ip)
-      .then((device) => addDevice(device))
-      .catch((err) => {
-        Homey.hideLoadingOverlay();
-        Homey.alert(err.message || err);
-      });
+    attempt('manual_pair', { ip, secret: secret() });
   });
 </script>

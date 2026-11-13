@@ -65,7 +65,7 @@
       "decimals": 3
     },
     "measure_power.target_power": {
-      "title": { 
+      "title": {
         "en": "Target Power (legacy)",
         "nl": "Doelvermogen (verouderd)",
         "de": "Zielleistung (veraltet)",
@@ -128,6 +128,41 @@
     }
   ],
   "settings": [
+    {
+      "id": "sign_in",
+      "type": "group",
+      "label": {
+        "en": "Sign-in",
+        "sv": "Inloggning",
+        "de": "Anmeldung",
+        "fr": "Connexion",
+        "es": "Inicio de sesión",
+        "nl": "Aanmelden"
+      },
+      "children": [
+        {
+          "id": "device_password",
+          "type": "password",
+          "value": "",
+          "label": {
+            "en": "Device password or access token",
+            "sv": "Enhetens lösenord eller åtkomsttoken",
+            "de": "Gerätepasswort oder Zugriffstoken",
+            "fr": "Mot de passe de l'appareil ou jeton d'accès",
+            "es": "Contraseña del dispositivo o token de acceso",
+            "nl": "Apparaatwachtwoord of toegangstoken"
+          },
+          "hint": {
+            "en": "Only needed if sign-in is turned on for your Homevolt. The default password is the QR code printed on the device; an access token created in the Homevolt's web interface works too. Shared by every Homevolt device at the same address. Leave empty if sign-in is off.",
+            "sv": "Behövs bara om inloggning är påslagen för din Homevolt. Standardlösenordet är QR-koden som är tryckt på enheten; en åtkomsttoken skapad i Homevolts webbgränssnitt fungerar också. Delas av alla Homevolt-enheter på samma adress. Lämna tomt om inloggning är avstängd.",
+            "de": "Nur nötig, wenn die Anmeldung für Ihren Homevolt aktiviert ist. Das Standardpasswort ist der auf dem Gerät aufgedruckte QR-Code; ein in der Weboberfläche des Homevolt erstelltes Zugriffstoken funktioniert ebenfalls. Gilt für alle Homevolt-Geräte unter derselben Adresse. Leer lassen, wenn die Anmeldung ausgeschaltet ist.",
+            "fr": "Nécessaire uniquement si la connexion est activée sur votre Homevolt. Le mot de passe par défaut est le code QR imprimé sur l'appareil ; un jeton d'accès créé dans l'interface web du Homevolt fonctionne aussi. Partagé par tous les appareils Homevolt à la même adresse. Laissez vide si la connexion est désactivée.",
+            "es": "Solo es necesario si el inicio de sesión está activado en tu Homevolt. La contraseña predeterminada es el código QR impreso en el dispositivo; también sirve un token de acceso creado en la interfaz web del Homevolt. Se comparte con todos los dispositivos Homevolt en la misma dirección. Déjalo vacío si el inicio de sesión está desactivado.",
+            "nl": "Alleen nodig als aanmelden is ingeschakeld voor je Homevolt. Het standaardwachtwoord is de QR-code die op het apparaat is gedrukt; een toegangstoken aangemaakt in de webinterface van de Homevolt werkt ook. Gedeeld door alle Homevolt-apparaten op hetzelfde adres. Laat leeg als aanmelden is uitgeschakeld."
+          }
+        }
+      ]
+    },
     {
       "id": "wifi_settings",
       "type": "group",
@@ -234,5 +269,5 @@
         }
       ]
     }
-  ]   
+  ]
 }

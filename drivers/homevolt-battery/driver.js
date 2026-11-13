@@ -1,5 +1,8 @@
 const Homey = require('homey');
 const { track, setAnalyticsConsent, analyticsConsent } = require('../../lib/analytics');
+const {
+  SECRET_SETTING, SCHEME_STORE, parseAddressArgs, probeHub, pairedDeviceExtras,
+} = require('../../lib/auth');
 
 
 class HomevoltBatteryDriver extends Homey.Driver {
@@ -63,15 +66,25 @@ class HomevoltBatteryDriver extends Homey.Driver {
       return true;
     });
 
-    session.setHandler('manual_pair', async (ip) => {
-      const address = String(ip || '').trim();
-      if (!address) {
-        throw new Error('Please enter an IP address');
-      }
+    // A device picked from the mDNS list. It used to be created without contacting it; now it is
+    // read first, because a unit with sign-in on would otherwise pair fine and then sit
+    // unavailable. A unit that cannot be reached at all is still added, as before.
+    session.setHandler('add_discovered', async ({ device, secret: entered } = {}) => {
+      const probe = await probeHub(this.homey, device.data.ip, entered);
+      if (probe.needsSecret) return probe;
+      return { device: { ...device, ...pairedDeviceExtras(probe) } };
+    });
+
+    session.setHandler('manual_pair', async (args) => {
+      const { address, secret: entered } = parseAddressArgs(args);
 
       // Manual entry means mDNS did not reach the battery - the fact that someone had to fall
-      // back to typing an address is itself the finding, so it is reported either way.
-      const data = await this.homey.app.getStatus({ address });
+      // back to typing an address is itself the finding, so it is reported either way. Except
+      // when it asks for a password: the battery *was* found, and the retry with the password is
+      // what gets reported.
+      const probe = await probeHub(this.homey, address, entered);
+      if (probe.needsSecret) return probe;
+      const { data } = probe;
       if (!data || !Array.isArray(data.ems)) {
         track('Completed Detection', {
           mode: 'pair', method: 'manual', found: 0, found_nothing: true,
@@ -82,31 +95,33 @@ class HomevoltBatteryDriver extends Homey.Driver {
         mode: 'pair', method: 'manual', found: 1, found_nothing: false,
       });
 
-      return {
+      const device = {
         name: 'Homevolt',
         data: {
           id: address,
           ip: address,
         },
       };
+      return { device: { ...device, ...pairedDeviceExtras(probe) } };
     });
   }
 
   /**
-   * Repair: lets the user re-enter the IP address of an already-paired
-   * device without deleting and re-pairing it (e.g. after a DHCP change on a
-   * subnet mDNS can't reach). See drivers/homevolt-battery/pair/repair_ip.html.
+   * Repair: lets the user re-enter the IP address of an already-paired device without deleting
+   * and re-pairing it (e.g. after a DHCP change on a subnet mDNS can't reach), and the device
+   * password or access token. See drivers/homevolt-battery/repair/repair_ip.html.
    */
   async onRepair(session, device) {
     session.setHandler('get_ip', async () => device.ip);
 
-    session.setHandler('repair_ip', async (ip) => {
-      const address = String(ip || '').trim();
-      if (!address) {
-        throw new Error('Please enter an IP address');
-      }
+    session.setHandler('repair_ip', async (args) => {
+      const { address, secret: entered } = parseAddressArgs(args);
 
-      const data = await this.homey.app.getStatus({ address });
+      // Repair is a deliberate retry, so whatever the hub refused before is tried again.
+      this.homey.app.resetAuth(address);
+      const probe = await probeHub(this.homey, address, entered, device.secret());
+      if (probe.needsSecret) return probe;
+      const { data, secret, scheme } = probe;
       if (!data || !Array.isArray(data.ems)) {
         track('Completed Detection', {
           mode: 'repair', method: 'manual', found: 0, found_nothing: true,
@@ -121,7 +136,16 @@ class HomevoltBatteryDriver extends Homey.Driver {
       // `data.ip` cannot be changed, so an in-memory-only update reverted to the pairing IP.
       await device.setStoreValue('ip', address);
       device.ip = address;
-      device.log(`IP address updated via repair to ${address}`);
+      await device.setStoreValue(SCHEME_STORE, scheme);
+      device.log(`IP address updated via repair to ${address} (${scheme})`);
+
+      if (secret !== device.secret()) {
+        await device.setSettings({ [SECRET_SETTING]: secret });
+        await this.homey.app.shareSecret(address, secret, device);
+        device.log('Password/token updated via repair');
+      }
+      device.fetchData().catch(device.error);
+      return { done: true };
     });
   }
 }

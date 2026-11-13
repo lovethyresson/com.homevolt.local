@@ -9,5 +9,12 @@
   "app_settings_analytics_label": "Envoyer des données d'utilisation anonymes",
   "app_settings_analytics_hint": "Aide à améliorer l'application. Les mesures, adresses IP, numéros de série et noms d'appareils ne sont jamais envoyés.",
   "battery_control_mode.local": "Local",
-  "battery_control_mode.remote": "Distant"
+  "battery_control_mode.remote": "Distant",
+  "auth": {
+    "required": "Ce Homevolt nécessite une connexion. Saisissez le mot de passe de l'appareil (le code QR sur l'appareil) ou un jeton d'accès dans les paramètres de l'appareil.",
+    "rejected": "Le Homevolt a refusé le mot de passe ou le jeton d'accès. Vérifiez-le dans les paramètres de l'appareil.",
+    "rate_limited": "Le Homevolt bloque la connexion après trop de tentatives. Nouvel essai dans __seconds__ s.",
+    "notification_required": "Votre Homevolt nécessite désormais une connexion, Homey ne peut donc plus le lire. Ouvrez l'appareil Homevolt dans Homey, allez dans ses paramètres et saisissez le mot de passe de l'appareil (le code QR sur l'appareil) ou un jeton d'accès.",
+    "notification_rejected": "Votre Homevolt a refusé le mot de passe ou le jeton d'accès enregistré dans Homey, Homey ne peut donc plus le lire. Ouvrez l'appareil Homevolt dans Homey et mettez-le à jour dans les paramètres de l'appareil."
+  }
 }

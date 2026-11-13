@@ -9,5 +9,12 @@
   "app_settings_analytics_label": "Enviar datos de uso anónimos",
   "app_settings_analytics_hint": "Ayuda a mejorar la aplicación. Nunca se envían lecturas, direcciones IP, números de serie ni nombres de dispositivos.",
   "battery_control_mode.local": "Local",
-  "battery_control_mode.remote": "Remoto"
+  "battery_control_mode.remote": "Remoto",
+  "auth": {
+    "required": "Este Homevolt requiere inicio de sesión. Introduce la contraseña del dispositivo (el código QR del dispositivo) o un token de acceso en los ajustes del dispositivo.",
+    "rejected": "El Homevolt rechazó la contraseña o el token de acceso. Compruébalo en los ajustes del dispositivo.",
+    "rate_limited": "El Homevolt bloquea el inicio de sesión tras demasiados intentos. Se reintentará en __seconds__ s.",
+    "notification_required": "Tu Homevolt ahora requiere inicio de sesión, por lo que Homey ya no puede leerlo. Abre el dispositivo Homevolt en Homey, ve a sus ajustes e introduce la contraseña del dispositivo (el código QR del dispositivo) o un token de acceso.",
+    "notification_rejected": "Tu Homevolt rechazó la contraseña o el token de acceso guardado en Homey, por lo que Homey ya no puede leerlo. Abre el dispositivo Homevolt en Homey y actualízalo en los ajustes del dispositivo."
+  }
 }

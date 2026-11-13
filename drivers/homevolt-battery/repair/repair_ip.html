@@ -1,5 +1,7 @@
 <style>
   .hint { color: #888; font-size: 0.85em; margin: 6px 0 14px; }
+  .secret-message { font-weight: 600; }
+  #repair-secret { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
   #repair-ip { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 6px; }
 </style>
 
@@ -8,6 +10,14 @@
 <label for="repair-ip">IP address</label>
 <input type="text" id="repair-ip" placeholder="192.168.2.50" />
 <p class="hint">Use this if the battery's address changed and it can no longer be reached.</p>
+<!-- Shown only when the Homevolt asks for sign-in and the saved password (if any) is not accepted.
+     HTTP vs HTTPS is detected. -->
+<div id="secret-section" hidden>
+  <p class="secret-message" id="secret-message"></p>
+  <label for="repair-secret">Device password or access token</label>
+  <input type="password" id="repair-secret" autocomplete="off" />
+  <p class="hint">The default password is the QR code printed on the device. An access token created in the Homevolt's web interface works too.</p>
+</div>
 <button type="button" id="save-btn" class="homey-button-primary-full">Save</button>
 
 <script type="text/javascript">
@@ -24,8 +34,17 @@
       return;
     }
     Homey.showLoadingOverlay();
-    Homey.emit('repair_ip', ip)
-      .then(() => Homey.done())
+    Homey.emit('repair_ip', { ip, secret: document.getElementById('repair-secret').value.trim() })
+      .then((result) => {
+        if (result && result.needsSecret) {
+          Homey.hideLoadingOverlay();
+          document.getElementById('secret-message').textContent = result.message;
+          document.getElementById('secret-section').hidden = false;
+          document.getElementById('repair-secret').focus();
+          return;
+        }
+        Homey.done();
+      })
       .catch((err) => {
         Homey.hideLoadingOverlay();
         Homey.alert(err.message || err);
