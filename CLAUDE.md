@@ -108,8 +108,11 @@ The firmware's `webserver_https_enable` param ("Serve this page over an encrypte
   bound to only one, so the second is read with `homey.discovery.getStrategy()`.
 - The running app (devices paired over HTTP) switched to HTTPS on the next poll and stayed online;
   an app restart with HTTPS on also came straight back.
+- Turning HTTPS off again (same day): port 443 stops answering, plain HTTP serves normally again
+  (`401` without a secret), and mDNS goes back to `_http._tcp` only. The running app switched back
+  to HTTP by itself and all devices stayed available.
 
-Not yet observed: turning HTTPS off again, and pairing a *new* device from the discovered list
+Not yet observed: pairing a *new* device from the discovered list
 with HTTPS on (Homey hides hubs that are already paired, so the author's unit could not show it).
 
 The code was written before any of this was known and does not depend on it; it was also tested
