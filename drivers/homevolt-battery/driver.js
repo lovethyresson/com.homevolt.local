@@ -3,6 +3,7 @@ const { track, setAnalyticsConsent, analyticsConsent } = require('../../lib/anal
 const {
   SECRET_SETTING, SCHEME_STORE, parseAddressArgs, probeHub, pairedDeviceExtras,
 } = require('../../lib/auth');
+const { discoveredHubs } = require('../../lib/discovery');
 
 
 class HomevoltBatteryDriver extends Homey.Driver {
@@ -12,15 +13,15 @@ class HomevoltBatteryDriver extends Homey.Driver {
   async onPairListDevices() {
     this.log('Searching for devices with mDNS ...');
 
-    const discoveryStrategy = this.getDiscoveryStrategy();
-    const discoveryResults = discoveryStrategy.getDiscoveryResults();
+    // Both the http and https announcements; see lib/discovery.js.
+    const discoveryResults = discoveredHubs(this.homey);
   
     // Log discovery results
     this.log('Battery discovery results:', discoveryResults);
 
     
     // id retrieval is a bit messy but a workaround until the ID is provided isolated in the discovery result
-    const devices = Object.values(discoveryResults).map(discoveryResult => {
+    const devices = discoveryResults.map(discoveryResult => {
       return {
         name: `Homevolt`,
         data: {

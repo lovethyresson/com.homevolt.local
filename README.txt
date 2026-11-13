@@ -29,7 +29,7 @@ The app detects both by itself when you add or repair a device.
 - HTTP or HTTPS: detected automatically. HTTPS is used whenever the Homevolt offers it, and turning it on or off later needs no repair.
 - Sign-in off: nothing to do. You are never asked for a password.
 - Sign-in on: the pairing screen asks for the device password (by default, the QR code printed on the device) or an access token, but only when the Homevolt requires one. For a device that is already added, enter it under the device's settings, Sign-in, or under Repair. Entering it on one Homevolt device saves it for the battery, grid sensor and solar devices.
-- Access tokens can be revoked without changing the device password. Create one in the Homevolt's web interface with the "full" scope.
+- Access tokens can be revoked without changing the device password. Create one in the Homevolt's web interface under API tokens, with the "auth" scope: that is enough for everything the app does, including the charge/discharge Flow cards.
 - If a firmware update turns sign-in on, the devices go unavailable with a message saying so, and Homey notifies you once. Enter the password or token and they recover.
 - Once a password is rejected, the app stops sending it until you enter it again, so Homey cannot lock you out of the Homevolt's own web interface.
 - The HTTPS certificate is not verified, because nothing on a home network can issue one Homey could check. The connection is encrypted, but this does not prove the answering device is your Homevolt.

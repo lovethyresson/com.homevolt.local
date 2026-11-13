@@ -51,9 +51,20 @@ secret, all three devices went unavailable with the sign-in message; after the d
 entered in the battery's settings, all three recovered. `ems.json`, `status.json` and `help`
 fetched with `Authorization: Bearer <password>` have every field and console command the app uses,
 unchanged — sign-in did not change the API. New in that `help`: `webserver` (state, auth and
-endpoints, as `/webserver.json`) and `ws_token <add|list|rm|scopes>` (token management). **Still
-unverified:** access tokens of either scope, tokens with the web server off, the wrong-password
-refusal and 429 path against the real unit, and anything about HTTPS.
+endpoints, as `/webserver.json`) and `ws_token <add|list|rm|scopes>` (token management).
+
+Tokens, verified the same day by creating temporary ones with `ws_token add <name> <scope>`
+(names: 1-15 chars of `a-z0-9_-`), testing, and removing them:
+
+- Scopes and masks: `auth` 0x1, `stream` 0x2, `ecu_read` 0x4, `full` 0xffffffff.
+- An `auth` token and a `full` token both read `/ems.json` and run console commands
+  (`sched_list`) — **`auth` is enough for everything this app does.**
+- `webserver -j` lists each endpoint's required scope: `/console.json`, `/status.json`,
+  `/params.json` need `auth`; `/ems.json` and `/schedule.json` accept `auth` *or* `ecu_read`. An
+  `ecu_read` token is therefore read-only for this app: polling works, console commands do not.
+- One wrong bearer value got a plain `401`, no immediate `429`.
+
+**Still unverified:** a token with "Web server always on" turned off, and the `429` lockout.
 
 How the app maps onto that (all in [lib/auth.js](lib/auth.js) and `HomevoltApp.request()` in app.js):
 
@@ -79,12 +90,31 @@ How the app maps onto that (all in [lib/auth.js](lib/auth.js) and `HomevoltApp.r
 
 ## HTTPS
 
-The firmware's `webserver_https_enable` param ("Serve this page over an encrypted connection") is
-the only thing known about it. **No unit with HTTPS on has been seen**, so whether plain HTTP still
-answers, refuses or redirects, which certificate is served, and whether the unit still advertises
-`_http._tcp` over mDNS are all unknown. The code is written not to depend on any of them, and was
-tested against a mock that does each of them (refuse / redirect / both / HTTPS-only, self-signed
-certificate):
+The firmware's `webserver_https_enable` param ("Serve this page over an encrypted connection").
+**Observed on the author's unit, 2026-11-13**, turning it on in the device UI (toggle + Apply):
+
+- Takes effect a few seconds after Apply (one `ECONNRESET` on HTTP in between). Port 443 then
+  serves; plain HTTP answers **every** path, GET and POST, with `302` to `https://<host>/` — the
+  root, not the requested path. So nothing can be read over HTTP any more.
+- The certificate is a factory device certificate, not self-signed: issuer `CN=Homevolt Prod CA,
+  OU=Homevolt Prod CA, O=Homevolt`, valid 2023-12-07 to 2122-12-07, no subjectAltName, subject
+  `CN=qr:<default password>, CN=sn:<serial>, O=Homevolt, OU=<model>`. Being factory-issued with a
+  100-year validity, it is almost certainly stable across reboots and updates, which makes
+  fingerprint pinning (TOFU) viable. **Its subject contains the default device password in clear
+  text**, readable by anyone on the LAN without signing in — so the default password protects
+  nothing once HTTPS is on, and users should change it. The app must never read or use it.
+- mDNS switches from `_http._tcp` to **only** `_https._tcp`. Discovery therefore uses two
+  strategies (`homevolt`, `homevolt_https`), merged by `host` in `lib/discovery.js`; a driver can be
+  bound to only one, so the second is read with `homey.discovery.getStrategy()`.
+- The running app (devices paired over HTTP) switched to HTTPS on the next poll and stayed online;
+  an app restart with HTTPS on also came straight back.
+
+Not yet observed: turning HTTPS off again, and pairing a *new* device from the discovered list
+with HTTPS on (Homey hides hubs that are already paired, so the author's unit could not show it).
+
+The code was written before any of this was known and does not depend on it; it was also tested
+against a mock that refuses / redirects / does both / is HTTPS-only, with a self-signed
+certificate:
 
 - **Detection (`app.detectScheme`, pairing and repair):** `GET /ems.json` over HTTPS first, then
   HTTP. Any HTTP response counts, 401 included, and no credential is sent, so detection never costs
@@ -100,11 +130,12 @@ certificate):
   `rejected`. That is why `redirect: 'manual'` is used.
 - **Request bodies must be replayable** (a Buffer, not a stream), because a switch sends the body
   twice. That is why `sendBatteryCommand()` uses `form.getBuffer()`.
-- **Certificate verification is off** (`rejectUnauthorized: false`): a LAN IP/.local name can't be
-  verified, so nothing could be checked against. Pinning the certificate seen at pairing (trust on
-  first use) would close the impersonation gap, but should only be added once it is known that the
-  firmware keeps one certificate across reboots and updates. A pinned certificate that rotates
-  would take the device offline.
+- **Certificate verification is off** (`rejectUnauthorized: false`): the certificate has no
+  subjectAltName for the IP/.local name and we do not have the Homevolt Prod CA, so nothing could be
+  checked against. Pinning the certificate seen at pairing (trust on first use) would close the
+  impersonation gap; the factory certificate's 100-year validity suggests it does not rotate, but
+  confirm it survives a reboot before shipping pinning — a pinned certificate that rotates would
+  take the device offline.
 - **Keep-alive HTTPS agent, max 2 sockets, 30 s idle timeout,** so polling does not do a TLS
   handshake on the ESP32 every 5 s. Because pooled sockets can be stale, `_send()` retries a
   `ECONNRESET` once, but only for GET: console commands such as `sched_add` are not idempotent.

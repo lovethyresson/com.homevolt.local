@@ -35,8 +35,9 @@ The app supports both and detects them itself when you add or repair a device:
   that is already added, it is under the device's settings → Sign-in, or under Repair. Entering it
   on one Homevolt device in Homey (battery, grid sensor or solar) saves it for all of them.
 - **Password or access token:** both work and are entered in the same field. An access token can
-  be revoked without changing the device password. Create one in the Homevolt's web interface with
-  the `full` scope, which the Homevolt describes as opening the same as the password does.
+  be revoked without changing the device password. Create one in the Homevolt's web interface
+  under API tokens, with the `auth` scope: that is enough for everything the app does, including
+  the charge/discharge Flow cards. (An `ecu_read` token only allows reading.)
 - **Existing installs:** if a firmware update turns sign-in on, the devices go unavailable with a
   message saying so, and Homey shows one notification. Enter the password or token and they recover
   on the next poll.
@@ -47,8 +48,6 @@ The app supports both and detects them itself when you add or repair a device:
   network can issue one Homey could check. So the app encrypts the connection but does not check
   the certificate. That protects the password and readings from being read off the network, but it
   does not prove the answering device is your Homevolt.
-- **HTTPS is new.** It is built to handle the Homevolt in any HTTPS configuration, but has not yet
-  been seen on a real unit. If you turn it on, please report how it goes in the forum thread below.
 
 ## PRIVACY
 This app can send anonymous usage data to help improve it. It is **off unless you turn it on**,

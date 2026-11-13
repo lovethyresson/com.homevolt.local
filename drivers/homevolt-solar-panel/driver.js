@@ -2,6 +2,7 @@ const Homey = require('homey');
 const {
   SECRET_SETTING, SCHEME_STORE, parseAddressArgs, probeHub, pairedDeviceExtras,
 } = require('../../lib/auth');
+const { discoveredHubs } = require('../../lib/discovery');
 
 class HomevoltSolarPanelDriver extends Homey.Driver {
   /**
@@ -10,12 +11,12 @@ class HomevoltSolarPanelDriver extends Homey.Driver {
   async onPairListDevices() {
     this.log('Searching for solar panel sensors with mDNS...');
 
-    const discoveryStrategy = this.getDiscoveryStrategy();
-    const discoveryResults = discoveryStrategy.getDiscoveryResults();
+    // Both the http and https announcements; see lib/discovery.js.
+    const discoveryResults = discoveredHubs(this.homey);
 
     this.log('Solar panel discovery results:', discoveryResults);
 
-    const devices = Object.values(discoveryResults).map(discoveryResult => ({
+    const devices = discoveryResults.map(discoveryResult => ({
       name: `Solar Sensor`,
       data: {
         id: `${discoveryResult.host}-solarpanel`,

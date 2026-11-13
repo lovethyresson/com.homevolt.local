@@ -2,6 +2,7 @@ const Homey = require('homey');
 const {
   SECRET_SETTING, SCHEME_STORE, parseAddressArgs, probeHub, pairedDeviceExtras,
 } = require('../../lib/auth');
+const { discoveredHubs } = require('../../lib/discovery');
 
 class HomevoltSensorDriver extends Homey.Driver {
   /**
@@ -14,15 +15,14 @@ class HomevoltSensorDriver extends Homey.Driver {
   async onPairListDevices() {
     this.log('Searching for sensors with mDNS...');
 
-    // Retrieve discovery strategy
-    const discoveryStrategy = this.getDiscoveryStrategy();
-    const discoveryResults = discoveryStrategy.getDiscoveryResults();
+    // Both the http and https announcements; see lib/discovery.js.
+    const discoveryResults = discoveredHubs(this.homey);
 
     // Log discovery results
     this.log('Sensor discovery results:', discoveryResults);
 
     // Map discovery results to grid sensor devices
-    const devices = Object.values(discoveryResults).map(discoveryResult => ({
+    const devices = discoveryResults.map(discoveryResult => ({
       name: `Grid Sensor`,
       data: {
         id: `${discoveryResult.host}-grid`,
